@@ -753,9 +753,6 @@ h2::after{
 }
 .card-modal-close:hover{ background: var(--p2); border-color: var(--p2); }
 
-/* Reserva espaço para o X (que fica em absolute, sobre o fluxo normal) para o título
-   nunca ficar embaixo dele, mesmo em telas estreitas onde o texto centralizado
-   chegaria perto da borda direita do modal. */
 .card-modal-close ~ .panel-title {
     max-width: calc(100% - 84px);
     margin-left: auto;

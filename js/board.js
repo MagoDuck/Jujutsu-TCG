@@ -35,9 +35,6 @@ function highlightValidTargets() {
     });
 }
 
-// Só pode haver uma Expansão de Domínio em campo por vez. Se a casa central já tem
-// um domínio, só é possível jogar outro por cima se o refino do novo for >= o do atual
-// (isso destrói o domínio anterior e ele não pode ser reutilizado nesta partida).
 function canPlaceDomain(card) {
     if (usedDomainIds.has(card.cardId)) {
         return { ok: false, reason: 'Este domínio já foi destruído nesta partida e não pode ser usado novamente.' };
@@ -109,7 +106,6 @@ function renderCard(card, click, isSelected = false, isHidden = false) {
     }
 
     if (card.isDomain) {
-        // Expansões de Domínio não têm atributos: só refino (canto sup. esquerdo) e nível.
         div.classList.add('domain-card');
         div.innerHTML = `
             <div class="domain-refino">${card.refino || 0}</div>

@@ -98,10 +98,6 @@ function initInstallExperience() {
 async function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
 
-    // sw.js já chama skipWaiting()/clients.claim() sozinho, então assim que uma
-    // versão nova termina de instalar ela assume o controle na hora — o que dispara
-    // este evento. Recarregamos para o usuário já estar na versão nova, sem precisar
-    // fechar e reabrir o app.
     let reloadedForUpdate = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (reloadedForUpdate) return;
@@ -113,8 +109,6 @@ async function registerServiceWorker() {
     try {
         const registration = await navigator.serviceWorker.register("./sw.js");
 
-        // Apps instalados (PWA) costumam ficar "abertos" em segundo plano por dias;
-        // checa por atualização toda vez que o usuário volta a abrir/focar o app.
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") registration.update();
         });

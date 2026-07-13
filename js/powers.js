@@ -1,8 +1,3 @@
-// Recalcula continuamente os efeitos de auras/domínios contínuos: parte sempre da
-// linha de base (base_*, que já inclui reduções permanentes como Erupção Vulcânica),
-// reaplica Desmantelar (halving por adjacência a Sukuna) e, por cima, o Santuário
-// Malevolente (halving no campo inteiro, se essa Expansão de Domínio estiver ativa),
-// restaurando qualquer carta que deixou de estar sob esses efeitos.
 function recalcAuras() {
     const before = boardState.map(c => c ? { t: c.t, r: c.r, b: c.b, l: c.l } : null);
 
@@ -43,9 +38,6 @@ function recalcAuras() {
     }
 }
 
-// Cartas de personagem cujos 4 atributos chegam a zero (por Desmantelar, Santuário
-// Malevolente, Erupção Vulcânica etc.) são destruídas: saem do campo e ficam banidas
-// pelo resto da partida. Domínios não têm atributos e nunca são afetados por isso.
 function destroyZeroAttributeCards() {
     for (let i = 0; i < TOTAL_CELLS; i++) {
         const c = boardState[i];
@@ -68,9 +60,6 @@ function destroyZeroAttributeCards() {
     }
 }
 
-// Ponto único de entrada para resolver o poder de uma carta recém-colocada (ou copiada).
-// Poderes interativos (boogie_woogie, dez_sombras) abrem uma UI e só chamam onDone
-// quando o jogador decide; os demais resolvem na hora.
 function resolveCardPower(pos, card, onDone) {
     executePower(pos, card, card.power, onDone);
 }
@@ -137,8 +126,6 @@ function applyJackpotPower(pos, card) {
     attrs.forEach(attr => {
         card[attr] = Math.floor(Math.random() * 16);
     });
-    // A rolagem vira a nova referência "de fábrica" da carta, tanto para a cor
-    // (aumentou/diminuiu) quanto para a linha de base usada por recalcAuras().
     card.original_t = card.base_t = card.t;
     card.original_r = card.base_r = card.r;
     card.original_b = card.base_b = card.b;
@@ -221,7 +208,6 @@ function applyCopiarPower(pos, card, onDone) {
 
 function triggerDezSombras(pos, card, onDone) {
     spawnPowerRing(pos, 'dez_sombras');
-    // Sombras não são domínios: nunca podem ser invocadas na casa central.
     const emptyCells = [];
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (boardState[i] === null && i !== CENTER_CELL) emptyCells.push(i);
@@ -263,7 +249,6 @@ function triggerDezSombras(pos, card, onDone) {
 function applyInfinitoPower(pos, card) {
     spawnPowerRing(pos, 'infinito');
     showToast('♾️ Infinito ativado! Carta imune a capturas!', 'gold');
-    // Marca a carta como imune (usando uma propriedade especial)
     card.invincible = true;
 }
 
@@ -278,8 +263,6 @@ function applyErupcaoVulcanicaPower(pos, card) {
             const reduced = Math.max(0, before - 2);
             const delta = before - reduced;
             const baseKey = 'base_' + randomAttr;
-            // A redução é permanente: reduz o valor atual e também a linha de base,
-            // mas preserva original_* intocado para o indicador vermelho continuar valendo.
             target[baseKey] = Math.max(0, (target[baseKey] !== undefined ? target[baseKey] : before) - delta);
             target[randomAttr] = reduced;
             updateCardDisplay(n, target);
@@ -289,10 +272,6 @@ function applyErupcaoVulcanicaPower(pos, card) {
     showToast('🌋 Erupção Vulcânica! -2 em atributo aleatório!', 'gold');
 }
 
-// Troca de lugar os valores dos atributos de uma carta: cima<->baixo, esquerda<->direita.
-// original_* e base_* trocam junto para a transformação ser permanente e continuar
-// coerente com o indicador de cor e com recalcAuras(). Usado por Mahito e pela
-// Auto-Personificação da Perfeição.
 function swapTopBottomLeftRight(target) {
     ['t_b', 'l_r'].forEach(pair => {
         const [a, b] = pair.split('_');

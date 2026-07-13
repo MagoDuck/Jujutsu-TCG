@@ -353,8 +353,6 @@ function showTutorialScreen() {
     showScreen('tutorial');
 }
 
-// Exemplos vivos (mesmas cartas/tabuleiro do jogo de verdade) usados no tutorial;
-// só precisa montar uma vez, então fica guardado depois da primeira chamada.
 function renderTutorialVisuals() {
     const charSlot = document.getElementById('tutorialCharCardSlot');
     const domainSlot = document.getElementById('tutorialDomainCardSlot');
@@ -405,8 +403,6 @@ function renderLevelScreen() {
 }
 function showLevelScreen() {
     if (playerDeckTemplate.length === 0) { showToast('Adicione ao menos 1 carta ao deck.', 'gold'); showDeckScreen(); return; }
-    // Um deck só de Expansões de Domínio não dá pra jogar: precisa de pelo menos
-    // 1 carta de personagem, já que domínios só entram na casa central.
     const characterCards = playerDeckTemplate.filter(id => !CARD_LIBRARY[id].isDomain);
     if (characterCards.length === 0) {
         showToast('Adicione ao menos 1 carta de personagem ao deck (domínios não contam).', 'gold');

@@ -118,9 +118,6 @@ function continueTurn(pos, card) {
     checkGameEnd();
 
     if (!gameEnded) {
-        // Se um dos dois ficou sem cartas, o outro continua jogando sozinho até sua
-        // própria mão também esvaziar (a partida só termina de fato quando os dois
-        // ficam sem cartas, ou quando o tabuleiro enche).
         currentPlayer = determineNextPlayer(currentPlayer);
         updateTurnBanner();
 
@@ -174,8 +171,6 @@ function captureCards(pos, card) {
 }
  
 function checkGameEnd() {
-    // A casa central é reservada para domínios e pode nunca ser ocupada numa partida;
-    // o tabuleiro conta como "cheio" quando todas as outras 24 casas têm carta.
     let nonCenterFilled = 0;
     boardState.forEach((c, i) => {
         if (c && i !== CENTER_CELL) nonCenterFilled++;
@@ -282,8 +277,6 @@ function cardPowerScore(cardId) {
 }
  
 function getAiDeckForLevel(level, owner) {
-    // A IA não sabe jogar Expansões de Domínio (regras de casa central/refino), então
-    // fica de fora do deck dela — o jogador é quem tem acesso a essas cartas.
     const ids = Object.keys(CARD_LIBRARY).filter(id => !CARD_LIBRARY[id].isDomain);
     const sorted = ids.slice().sort((a, b) => cardPowerScore(a) - cardPowerScore(b));
     const windowSize = 10;
@@ -300,8 +293,6 @@ function aiMove() {
     if (gameEnded) return;
     if (opponentDeck.length === 0) return;
  
-    // A IA nunca tem cartas de domínio no deck (ver getAiDeckForLevel), então a casa
-    // central nunca é uma jogada válida para ela.
     const emptyCells = [];
     boardState.forEach((v, i) => {
         if (v === null && i !== CENTER_CELL) emptyCells.push(i);

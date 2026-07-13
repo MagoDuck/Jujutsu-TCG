@@ -4,7 +4,7 @@ Jogo de cartas no navegador inspirado em Jujutsu Kaisen, no estilo Triple Triad:
 
 ## Como jogar
 
-Abra o [index.html](https://magoduck.github.io/Jujutsu-TCG/) num navegador (ou instale como app pelo menu). Na tela inicial dá pra montar seu deck, ver o tutorial ou escolher um nível e batalhar contra a IA. Progresso e deck ficam salvos no `localStorage` do navegador.
+Abra o [Jujutsu-TCG](https://magoduck.github.io/Jujutsu-TCG/) num navegador (ou instale como app pelo menu). Na tela inicial dá pra montar seu deck, ver o tutorial ou escolher um nível e batalhar contra a IA. Progresso e deck ficam salvos no `localStorage` do navegador.
 
 ## Estrutura do projeto
 

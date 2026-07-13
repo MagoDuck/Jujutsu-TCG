@@ -1,0 +1,28 @@
+{
+  "name": "Jujutsu Kaisen TCG",
+  "short_name": "Jujutsu TCG",
+  "description": "Jogo de cartas com modo IA, PvP, deck, loja e suporte offline.",
+  "id": "./index.html",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070c",
+  "theme_color": "#0a0e17",
+  "categories": ["games", "entertainment"],
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "./icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/app-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

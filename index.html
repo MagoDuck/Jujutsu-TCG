@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jujutsu Kaisen TCG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e17">
+<meta name="description" content="Arena de batalha de cartas contra a IA com progressão por níveis, deck e suporte PWA.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/app-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+ 
+<section id="mainMenu" class="screen">
+    <h1>Jujutsu TCG</h1>
+    <div class="subtitle">Arena de Batalha de Cartas</div>
+    <div class="menu-panel">
+        <div class="menu-row"><span id="menuDeckInfo">Deck: 0 cartas</span><span id="menuLevelInfo">Nível máximo: 1</span></div>
+        <div class="menu-actions"><button id="playBtn" class="menu-btn" type="button">Jogar</button><button id="deckBtn" class="menu-btn" type="button">Deck</button><button id="tutorialBtn" class="menu-btn" type="button">Tutorial</button><button id="installBtn" class="menu-btn hidden" type="button">Instalar app</button></div>
+        <div id="installStatus" class="install-hint" aria-live="polite"></div>
+    </div>
+</section>
+ 
+<section id="levelScreen" class="screen hidden">
+    <div class="panel-topbar"><div><div class="panel-title">Selecionar Nível</div></div><button id="levelBackBtn" class="panel-btn" type="button">Voltar</button></div>
+    <div class="levels-panel">
+        <div id="levelProgress" class="level-progress"></div>
+        <div id="levelGrid" class="level-grid"></div>
+    </div>
+</section>
+ 
+<section id="deckScreen" class="screen hidden">
+    <div class="panel-topbar"><div><div class="panel-title">Editar Deck</div><div id="deckCount" class="deck-status">0 cartas</div></div><button id="deckBackBtn" class="panel-btn" type="button">Voltar</button></div>
+    <div class="deck-panel deck-columns">
+        <div>
+            <div class="deck-column-title">📋 No Deck <span class="badge in-deck" id="inDeckCount">0</span></div>
+            <div id="activeDeckList" class="card-grid"></div>
+            <div id="activeDeckEmpty" class="empty-state">Nenhuma carta no deck</div>
+        </div>
+        <div>
+            <div class="deck-column-title">📦 Disponíveis <span class="badge available" id="availableCount">0</span></div>
+            <div id="collectionList" class="card-grid"></div>
+            <div id="collectionEmpty" class="empty-state">Todas as cartas disponíveis estão no deck</div>
+        </div>
+        <div>
+            <div class="deck-column-title">🔒 Bloqueadas <span class="badge locked" id="lockedCount">0</span></div>
+            <div id="lockedList" class="card-grid"></div>
+            <div id="lockedEmpty" class="empty-state">Nenhuma carta bloqueada</div>
+        </div>
+    </div>
+</section>
+
+<section id="tutorialScreen" class="screen hidden">
+    <div class="panel-topbar"><div><div class="panel-title">Tutorial</div></div><button id="tutorialBackBtn" class="panel-btn" type="button">Voltar</button></div>
+    <div class="tutorial-panel">
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">🎯 Objetivo</div>
+            <p>Cada partida é disputada num tabuleiro. Você e o oponente se revezam colocando cartas nas casas vazias, tentando capturar as cartas um do outro. Quem terminar a partida controlando mais cartas no tabuleiro vence.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">🃏 Os dois tipos de carta</div>
+            <div class="tutorial-visual-row">
+                <div class="tutorial-visual-card">
+                    <div id="tutorialCharCardSlot"></div>
+                    <div class="tutorial-visual-label">Feiticeiro<br><span>4 atributos (topo, direita, baixo, esquerda) + nível no canto</span></div>
+                </div>
+                <div class="tutorial-visual-card">
+                    <div id="tutorialDomainCardSlot"></div>
+                    <div class="tutorial-visual-label">Expansão de Domínio<br><span>Sem atributos: refino no canto superior + nível no canto</span></div>
+                </div>
+            </div>
+            <p>Cartas de Feiticeiro são a maioria do seu deck e são elas que capturam e são capturadas. Expansões de Domínio são um tipo raro e especial: em vez de atributos, têm um número de <strong>refino</strong> e afetam o tabuleiro inteiro quando jogadas.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">🗺️ O tabuleiro</div>
+            <div id="tutorialBoardPreview" class="tutorial-board-preview"></div>
+            <p>O tabuleiro tem 5×5 casas (25 no total). A casa bem no meio, destacada em dourado, é reservada exclusivamente para Expansões de Domínio: nenhuma carta de personagem pode ser jogada nela, e nenhuma Expansão de Domínio pode ser jogada em outro lugar.</p>
+            <p>Só pode existir uma Expansão de Domínio em campo por vez. Para jogar outra por cima de uma que já está lá, o refino da nova precisa ser igual ou maior — isso destrói a anterior (que não pode mais ser usada naquela partida) e o efeito da nova passa a valer.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">▶️ Como jogar sua vez</div>
+            <p>Na sua vez, toque numa carta da sua mão para selecioná-la e depois toque numa casa vazia válida do tabuleiro para jogá-la ali. Os jogadores se revezam turno a turno até o fim da partida.</p>
+            <p>Se você ficar sem cartas na mão antes do oponente, ele continua jogando sozinho até a mão dele também esvaziar — você não perde a vez, simplesmente não tem mais nada pra jogar.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">⚔️ Como capturar</div>
+            <p>Toda carta de feiticeiro tem 4 números: um em cima, um embaixo, um à esquerda e um à direita. Ao colocar sua carta ao lado de uma carta inimiga, o número do seu lado voltado para ela é comparado com o número do lado dela voltado para você.</p>
+            <p>Se o seu número for maior, você captura aquela carta — ela passa a ser sua, mesmo continuando na mesma casa do tabuleiro. Uma única jogada pode capturar várias cartas inimigas ao mesmo tempo, se houver mais de uma adjacente.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">💥 Cartas destruídas</div>
+            <p>Alguns efeitos reduzem os atributos de uma carta (como poderes que cortam valores pela metade ou diminuem um atributo). Se os 4 números de uma carta chegarem a zero ao mesmo tempo, ela é <strong>destruída</strong>: sai do tabuleiro imediatamente e não pode ser usada de novo naquela partida, nem por você nem pelo oponente.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">✨ Cartas especiais</div>
+            <p>Muitas cartas de personagem têm poderes únicos que ativam automaticamente (ou pedem uma escolha) assim que entram em campo. Para conhecer o poder de cada carta, toque duas vezes (ou dê um duplo clique) nela para abrir os detalhes.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">🏆 Fim de partida</div>
+            <p>A partida termina em qualquer uma destas duas situações, o que acontecer primeiro:</p>
+            <p>• Todas as casas do tabuleiro (menos a central) ficam ocupadas;</p>
+            <p>• Nenhum dos dois jogadores tem mais cartas na mão para jogar, mesmo com casas vazias sobrando.</p>
+            <p>Quando a partida acaba, vence quem tiver mais cartas suas no tabuleiro naquele momento. Empate é possível.</p>
+        </div>
+        <div class="tutorial-step">
+            <div class="tutorial-step-title">🧩 Montando seu deck</div>
+            <p>Na tela de Deck você escolhe quais cartas desbloqueadas vão para o seu baralho. Cada carta tem um nível, e a soma dos níveis do seu deck não pode passar do limite mostrado na tela.</p>
+            <p>Seu deck precisa ter pelo menos 1 carta de personagem para você poder entrar numa partida — um deck só com Expansões de Domínio não é suficiente, já que elas sozinhas não enchem o tabuleiro.</p>
+        </div>
+    </div>
+</section>
+
+<main id="gameScreen" class="screen hidden">
+<div class="subtitle" id="levelSubtitle"></div>
+ 
+<div id="gameTopBar">
+    <div class="scoreboard">
+        <span class="tag p1" id="tagP1">Você <span id="countP1">0</span></span>
+        <span class="vs">VS</span>
+        <span class="tag p2" id="tagP2">Oponente <span id="countP2">0</span></span>
+    </div>
+ 
+    <div id="turnBanner" class="p1-turn"><span class="dot"></span><span id="turnBannerText">Sua Vez</span></div>
+ 
+    <button id="settingsBtn" class="settings-btn" type="button" aria-label="Configurações"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="#ffffff"><path d="M480,320.333C480,332.475 470.142,342.333 458,342.333L54,342.333C41.858,342.333 32,332.475 32,320.333C32,308.191 41.858,298.333 54,298.333L458,298.333C470.142,298.333 480,308.191 480,320.333ZM480,449C480,461.142 470.142,471 458,471L54,471C41.858,471 32,461.142 32,449C32,436.858 41.858,427 54,427L458,427C470.142,427 480,436.858 480,449ZM480,191.667C480,203.809 470.142,213.667 458,213.667L54,213.667C41.858,213.667 32,203.809 32,191.667C32,179.525 41.858,169.667 54,169.667L458,169.667C470.142,169.667 480,179.525 480,191.667ZM480,63C480,75.142 470.142,85 458,85L54,85C41.858,85 32,75.142 32,63C32,50.858 41.858,41 54,41L458,41C470.142,41 480,50.858 480,63Z"/></svg></button>
+</div>
+ 
+<div class="hand-section" id="handSection2">
+    <h2 class="hand-title"><span id="opLabel">Cartas do Oponente</span> <span class="waiting-tag" id="waitingTag" style="display:none;">Oponente pensando…</span></h2>
+    <div id="opponentCards"></div>
+</div>
+ 
+<div id="boardContainer">
+    <div id="board"></div>
+</div>
+ 
+<div class="hand-section" id="handSection1">
+    <h2 class="hand-title"><span>Suas Cartas</span></h2>
+    <div id="playerCards"></div>
+</div>
+ 
+</main>
+ 
+<div id="settingsModal" class="card-modal-overlay">
+    <div class="card-modal settings-modal">
+        <button class="card-modal-close" onclick="closeSettingsModal()">×</button>
+        <div class="panel-title">Configurações</div>
+        <div class="settings-modal-actions">
+            <button id="restartBtn" class="menu-btn" type="button">↻ Reiniciar</button>
+            <button id="gameMenuBtn" class="menu-btn" type="button">Menu Principal</button>
+        </div>
+    </div>
+</div>
+ 
+<div id="winnerOverlay" class="card-modal-overlay">
+    <div class="card-modal">
+        <h2 id="winnerBox"></h2>
+        <div id="postMatchActions" style="display:none;">
+            <button id="backToLevelsBtn" class="panel-btn" type="button">Voltar aos Níveis</button>
+        </div>
+    </div>
+</div>
+ 
+<div id="toastContainer"></div>
+ 
+<div id="cardModal" class="card-modal-overlay">
+    <div class="card-modal">
+        <button class="card-modal-close" onclick="closeCardModal()">×</button>
+        <div class="card-modal-content">
+            <div id="cardModalImage" class="card-modal-image"></div>
+            <div class="card-modal-info">
+                <div id="cardModalName" class="card-modal-name"></div>
+                <div id="cardModalPower" class="card-modal-power">
+                    <div class="card-modal-power-title">Poder: <span id="cardModalPowerName"></span></div>
+                    <div id="cardModalPowerDesc" class="card-modal-power-desc"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="shadowModal" class="card-modal-overlay">
+    <div class="card-modal shadow-modal">
+        <button id="shadowModalClose" class="card-modal-close" onclick="closeShadowModal()">×</button>
+        <div class="panel-title">🌑 Técnica das Dez Sombras</div>
+        <div id="shadowModalHint" class="shadow-modal-hint">Escolha uma sombra para invocar</div>
+        <div id="shadowGrid" class="shadow-grid"></div>
+    </div>
+</div>
+
+<script src="./js/state.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/cards-data.js"></script>
+<script src="./js/progress.js"></script>
+<script src="./js/screens.js"></script>
+<script src="./js/board.js"></script>
+<script src="./js/powers.js"></script>
+<script src="./js/turns.js"></script>
+<script src="./js/main.js"></script>
+</body>
+</html>

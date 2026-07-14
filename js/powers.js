@@ -10,17 +10,8 @@ function recalcAuras() {
         c.l = c.base_l;
     }
 
-    for (let i = 0; i < TOTAL_CELLS; i++) {
-        const c = boardState[i];
-        if (!c || c.power !== 'desmantelar') continue;
-        getNeighborPositions(i).forEach(n => {
-            const target = boardState[n];
-            if (target && !target.frozen && !target.isDomain) halveAttributes(target);
-        });
-    }
-
     const domain = boardState[CENTER_CELL];
-    if (domain && domain.isDomain && domain.power === 'santuario_malevolente') {
+    if (domain && domain.isDomain && domain.power === 'santuario_malevolente' && !domain.disabledPower) {
         for (let i = 0; i < TOTAL_CELLS; i++) {
             const c = boardState[i];
             if (!c || c.isDomain || c.frozen) continue;
@@ -38,12 +29,36 @@ function recalcAuras() {
     }
 }
 
+function logDestroyedCard(card) {
+    if (!card || card.isDomain || !card.cardId) return;
+    destroyedCardIds.add(card.cardId);
+    destroyedCardsLog.push({
+        cardId: card.cardId,
+        img: card.img,
+        name: card.name,
+        t: card.original_t, r: card.original_r, b: card.original_b, l: card.original_l,
+        owner: card.owner,
+        cardLevel: card.cardLevel,
+        power: card.power
+    });
+}
+
+function releaseCordaNegraTarget(card) {
+    if (!card || card.power !== 'corda_negra' || card.cordaNegraTargetPos === null || card.cordaNegraTargetPos === undefined) return;
+    const target = boardState[card.cordaNegraTargetPos];
+    if (target && target.cardId === card.cordaNegraTargetId) {
+        target.disabledPower = false;
+        updateCardDisplay(card.cordaNegraTargetPos, target);
+    }
+}
+
 function destroyZeroAttributeCards() {
     for (let i = 0; i < TOTAL_CELLS; i++) {
         const c = boardState[i];
         if (!c || c.isDomain) continue;
         if (c.t === 0 && c.r === 0 && c.b === 0 && c.l === 0) {
-            if (c.cardId) destroyedCardIds.add(c.cardId);
+            logDestroyedCard(c);
+            releaseCordaNegraTarget(c);
             boardState[i] = null;
 
             const cell = board.children[i];
@@ -72,11 +87,6 @@ function executePower(pos, card, powerType, onDone) {
             break;
         case 'infinito':
             applyInfinitoPower(pos, card);
-            onDone();
-            break;
-        case 'desmantelar':
-            spawnPowerRing(pos, 'desmantelar');
-            showToast('👹 Desmantelar! Cartas ao lado têm os atributos reduzidos pela metade!', 'gold');
             onDone();
             break;
         case 'erupcao_vulcanica':
@@ -114,6 +124,30 @@ function executePower(pos, card, powerType, onDone) {
         case 'dez_sombras':
             triggerDezSombras(pos, card, onDone);
             break;
+        case 'troca_de_corpos':
+            triggerTrocaDeCorpos(pos, card, onDone);
+            break;
+        default:
+            onDone();
+    }
+}
+
+function resolvePostCapturePower(pos, card, captureCount, onDone) {
+    if (boardState[pos] !== card) { onDone(); return; }
+    switch (card.power) {
+        case 'desmantelar':
+            applyDesmantelarPower(pos, card);
+            recalcAuras();
+            destroyZeroAttributeCards();
+            onDone();
+            break;
+        case 'determinacao':
+            if (captureCount > 0) applyDeterminacaoPower(pos, card, captureCount);
+            onDone();
+            break;
+        case 'corda_negra':
+            triggerCordaNegra(pos, card, onDone);
+            break;
         default:
             onDone();
     }
@@ -122,9 +156,19 @@ function executePower(pos, card, powerType, onDone) {
 function applyJackpotPower(pos, card) {
     spawnPowerRing(pos, 'jackpot');
     card.hiddenStats = false;
+
+    let cardsAlreadyOnBoard = 0;
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (i === pos) continue;
+        if (boardState[i] && !boardState[i].isDomain) cardsAlreadyOnBoard++;
+    }
+    const highChance = Math.max(0, 0.9 - 0.1 * cardsAlreadyOnBoard);
+
     const attrs = ['t', 'r', 'b', 'l'];
     attrs.forEach(attr => {
-        card[attr] = Math.floor(Math.random() * 16);
+        card[attr] = Math.random() < highChance
+            ? 10 + Math.floor(Math.random() * 6)  // valor alto: 10-15
+            : Math.floor(Math.random() * 10);      // valor baixo: 0-9
     });
     card.original_t = card.base_t = card.t;
     card.original_r = card.base_r = card.r;
@@ -136,7 +180,6 @@ function applyJackpotPower(pos, card) {
 
 function triggerBoogieWoogie(pos, card, onDone) {
     spawnPowerRing(pos, 'boogie_woogie');
-    // A casa central (e qualquer domínio nela) nunca é um alvo válido de troca.
     const targets = [];
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (i !== pos && i !== CENTER_CELL && boardState[i] !== null) targets.push(i);
@@ -191,7 +234,8 @@ function applyCopiarPower(pos, card, onDone) {
     spawnPowerRing(pos, 'copiar');
     const candidates = [];
     for (let i = 0; i < TOTAL_CELLS; i++) {
-        if (i !== pos && boardState[i] && boardState[i].power && boardState[i].power !== 'copiar') {
+        if (i !== pos && boardState[i] && boardState[i].power && !boardState[i].disabledPower
+            && boardState[i].power !== 'copiar' && boardState[i].power !== 'corda_negra') {
             candidates.push(boardState[i].power);
         }
     }
@@ -222,7 +266,7 @@ function triggerDezSombras(pos, card, onDone) {
     const finish = (shadowId) => {
         const shadow = SHADOW_CARDS[shadowId];
         const summonPos = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        const shadowCard = createCard(shadow.img, shadow.t, shadow.r, shadow.b, shadow.l, card.owner, null, shadow.name, shadow.cardLevel);
+        const shadowCard = createCard(shadow.img, shadow.t, shadow.r, shadow.b, shadow.l, card.owner, shadow.power || null, shadow.name, shadow.cardLevel);
         boardState[summonPos] = shadowCard;
         updateCardDisplay(summonPos, shadowCard);
         const cardEl = board.children[summonPos].querySelector('.card');
@@ -230,6 +274,8 @@ function triggerDezSombras(pos, card, onDone) {
         showToast(`🌑 ${shadow.name} invocado(a) pela Técnica das Dez Sombras!`, card.owner === 1 ? 'p1' : 'p2');
 
         if (shadowId === 'mahoraga' && boardState[pos] === card) {
+            logDestroyedCard(card);
+            releaseCordaNegraTarget(card);
             boardState[pos] = null;
             const hostCell = board.children[pos];
             if (hostCell) hostCell.innerHTML = '';
@@ -328,8 +374,6 @@ function applyMarBrilhantePower(pos, card) {
         const target = boardState[i];
         if (target && !target.isDomain && !target.frozen) {
             const randomAttr = attrs[Math.floor(Math.random() * attrs.length)];
-            // O bônus é permanente: soma ao valor atual e à linha de base (mantendo
-            // original_* intocado, igual à Erupção Vulcânica, para o indicador de cor).
             const baseKey = 'base_' + randomAttr;
             target[baseKey] = (target[baseKey] !== undefined ? target[baseKey] : target[randomAttr]) + 5;
             target[randomAttr] += 5;
@@ -341,5 +385,167 @@ function applyMarBrilhantePower(pos, card) {
     showToast(affected > 0
         ? 'Mar Brilhante de Galhos Crescentes! +5 em um atributo aleatório de cada carta em campo!'
         : 'Nenhuma carta em campo para fortalecer!', affected > 0 ? 'gold' : 'p2');
+}
+
+function applyDesmantelarPower(pos, card) {
+    spawnPowerRing(pos, 'desmantelar');
+    let affected = 0;
+    getNeighborPositions(pos).forEach(n => {
+        const target = boardState[n];
+        if (target && !target.isDomain && !target.frozen) {
+            halveAttributes(target);
+            target.base_t = target.t;
+            target.base_r = target.r;
+            target.base_b = target.b;
+            target.base_l = target.l;
+            updateCardDisplay(n, target);
+            spawnFloatNumber(n, '½', false);
+            affected++;
+        }
+    });
+    showToast(affected > 0
+        ? '👹 Desmantelar! Cartas ao lado têm os atributos reduzidos pela metade!'
+        : '👹 Nenhuma carta ao lado para desmantelar!', affected > 0 ? 'gold' : 'p2');
+}
+
+function applyDeterminacaoPower(pos, card, count) {
+    const bonus = count * 2;
+    ['t', 'r', 'b', 'l'].forEach(attr => {
+        card['base_' + attr] += bonus;
+        card[attr] += bonus;
+    });
+    spawnPowerRing(pos, 'determinacao');
+    updateCardDisplay(pos, card);
+    spawnFloatNumber(pos, '+' + bonus, true);
+    showToast(`💪 Determinação! +${bonus} em todos os atributos!`, 'gold');
+}
+
+function triggerCordaNegra(pos, card, onDone) {
+    const candidates = [];
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (i === pos) continue;
+        const c = boardState[i];
+        if (c && c.power && !c.disabledPower) candidates.push(i);
+    }
+
+    if (candidates.length === 0) {
+        showToast('⛓️ Nenhuma carta com poder para anular!', 'p2');
+        onDone();
+        return;
+    }
+
+    const finish = (targetPos) => {
+        if (targetPos !== null && targetPos !== undefined && boardState[targetPos]) {
+            const target = boardState[targetPos];
+            target.disabledPower = true;
+            card.cordaNegraTargetId = target.cardId || null;
+            card.cordaNegraTargetPos = targetPos;
+            updateCardDisplay(targetPos, target);
+            showToast(`⛓️ Corda Negra! O poder de ${target.name} foi anulado!`, 'gold');
+        } else {
+            showToast('⛓️ Corda Negra não foi usada.', 'p2');
+        }
+        onDone();
+    };
+
+    spawnPowerRing(pos, 'corda_negra');
+    if (card.owner === 1) {
+        beginCordaNegraSelection(pos, candidates, finish);
+    } else {
+        finish(candidates[Math.floor(Math.random() * candidates.length)]);
+    }
+}
+
+function beginCordaNegraSelection(pos, targets, resolve) {
+    pendingSelection = { type: 'cordaNegra', pos, targets, resolve };
+    clearValidTargets();
+    targets.forEach(i => board.children[i].classList.add('valid-target'));
+    const hostCard = board.children[pos].querySelector('.card');
+    if (hostCard) hostCard.classList.add('selected');
+    showToast('⛓️ Escolha uma carta para anular o poder (ou toque em Miguel novamente para cancelar)', 'p1');
+}
+
+function triggerTrocaDeCorpos(pos, card, onDone) {
+    if (destroyedCardsLog.length === 0) {
+        onDone();
+        return;
+    }
+
+    const proceed = (choiceIndex) => {
+        if (choiceIndex === null || choiceIndex === undefined) {
+            showToast('🔁 Troca de Corpos não foi usada.', 'p2');
+            onDone();
+            return;
+        }
+        const revived = destroyedCardsLog.splice(choiceIndex, 1)[0];
+        if (!revived) { onDone(); return; }
+
+        boardState[pos] = null;
+        const cell = board.children[pos];
+        if (cell) cell.innerHTML = '';
+
+        const newCard = createCard(revived.img, revived.t, revived.r, revived.b, revived.l, revived.owner, revived.power, revived.name, revived.cardLevel);
+        newCard.cardId = revived.cardId;
+        boardState[pos] = newCard;
+        updateCardDisplay(pos, newCard);
+        const cardEl = board.children[pos].querySelector('.card');
+        if (cardEl) cardEl.classList.add('just-placed');
+        showToast(`🔁 Troca de Corpos! ${newCard.name} retornou ao campo!`, newCard.owner === 1 ? 'p1' : 'p2');
+        onDone();
+    };
+
+    spawnPowerRing(pos, 'troca_de_corpos');
+    if (card.owner === 1) {
+        openTrocaDeCorposModal(destroyedCardsLog, proceed);
+    } else {
+        if (Math.random() < 0.5) {
+            proceed(Math.floor(Math.random() * destroyedCardsLog.length));
+        } else {
+            onDone();
+        }
+    }
+}
+
+function applyBestaMiticaAmbarExplosion(pos, card) {
+    getNeighborPositions(pos).forEach(n => {
+        const target = boardState[n];
+        if (target && !target.isDomain && !target.frozen && target.owner !== card.owner) {
+            ['t', 'r', 'b', 'l'].forEach(attr => {
+                const reduced = Math.max(0, target[attr] - 5);
+                const delta = target[attr] - reduced;
+                target['base_' + attr] = Math.max(0, target['base_' + attr] - delta);
+                target[attr] = reduced;
+            });
+            updateCardDisplay(n, target);
+            spawnFloatNumber(n, '-5', false);
+        }
+    });
+    showToast(`🐴 ${card.name} se autodestrói! Cartas inimigas adjacentes perdem 5 pontos em todos os atributos!`, 'gold');
+    logDestroyedCard(card);
+    releaseCordaNegraTarget(card);
+    boardState[pos] = null;
+    const cell = board.children[pos];
+    if (cell) cell.innerHTML = '';
+}
+
+function tickRoundBasedPowers() {
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        const card = boardState[i];
+        if (!card || card.isDomain || card.disabledPower) continue;
+
+        if (card.power === 'adaptacao') {
+            ['t', 'r', 'b', 'l'].forEach(attr => {
+                card['base_' + attr] += 2;
+                card[attr] += 2;
+            });
+            updateCardDisplay(i, card);
+            spawnFloatNumber(i, '+2', true);
+        } else if (card.power === 'besta_mitica_ambar') {
+            card.roundsOnField = (card.roundsOnField || 0) + 1;
+            if (card.roundsOnField >= 6) {
+                applyBestaMiticaAmbarExplosion(i, card);
+            }
+        }
+    }
 }
 

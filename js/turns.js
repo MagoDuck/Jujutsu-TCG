@@ -7,7 +7,7 @@ function updateCardDisplay(pos, card) {
 }
  
 function handleCellClick(pos) {
-    if (pendingSelection && pendingSelection.type === 'boogie') {
+    if (pendingSelection) {
         const { pos: sourcePos, targets, resolve } = pendingSelection;
         pendingSelection = null;
         clearValidTargets();
@@ -33,7 +33,7 @@ function placeCard(pos) {
 
     if (card.isDomain) {
         if (pos !== CENTER_CELL) {
-            showToast('🌀 Expansões de Domínio só podem ser jogadas na casa central!', 'p2');
+            showToast('Expansões de Domínio só podem ser jogadas na casa central!', 'p2');
             return;
         }
         const check = canPlaceDomain(card);
@@ -50,7 +50,7 @@ function placeCard(pos) {
             if (oldCell) oldCell.innerHTML = '';
         }
     } else if (pos === CENTER_CELL) {
-        showToast('🌀 A casa central é exclusiva para Expansões de Domínio!', 'p2');
+        showToast('A casa central é exclusiva para Expansões de Domínio!', 'p2');
         return;
     }
 
@@ -81,7 +81,11 @@ function placeCard(pos) {
         hiddenStats: card.hiddenStats || false,
         isDomain: !!card.isDomain,
         refino: card.refino || 0,
-        cardId: card.cardId
+        cardId: card.cardId,
+        disabledPower: false,
+        roundsOnField: 0,
+        cordaNegraTargetId: null,
+        cordaNegraTargetPos: null
     };
 
     deck.splice(selectedCard.index, 1);
@@ -106,28 +110,41 @@ function placeCard(pos) {
     }
 }
 
+const POST_CAPTURE_POWERS = ['desmantelar', 'determinacao', 'corda_negra'];
+
 function continueTurn(pos, card) {
     recalcAuras();
     destroyZeroAttributeCards();
 
+    let captured = 0;
     if (boardState[pos] === card && !card.isDomain) {
-        captureCards(pos, card);
+        captured = captureCards(pos, card);
     }
 
-    updateScores();
-    checkGameEnd();
+    const finishTurn = () => {
+        tickRoundBasedPowers();
+        destroyZeroAttributeCards();
+        updateScores();
+        checkGameEnd();
 
-    if (!gameEnded) {
-        currentPlayer = determineNextPlayer(currentPlayer);
-        updateTurnBanner();
+        if (!gameEnded) {
+            currentPlayer = determineNextPlayer(currentPlayer);
+            updateTurnBanner();
 
-        if (currentPlayer === 2) {
-            updateTurnBanner(true);
-            setTimeout(aiMove, 500);
+            if (currentPlayer === 2) {
+                updateTurnBanner(true);
+                setTimeout(aiMove, 500);
+            }
         }
-    }
 
-    renderHands();
+        renderHands();
+    };
+
+    if (card.power && POST_CAPTURE_POWERS.includes(card.power) && boardState[pos] === card && !card.isDomain) {
+        resolvePostCapturePower(pos, card, captured, finishTurn);
+    } else {
+        finishTurn();
+    }
 }
 
 function determineNextPlayer(mover) {
@@ -139,7 +156,7 @@ function determineNextPlayer(mover) {
 function captureCards(pos, card) {
     if (isCaptureBlockedByDomain()) {
         showToast('🕳️ Vazio Infinito impede qualquer captura!', 'p2');
-        return;
+        return 0;
     }
 
     const sides = {
@@ -154,7 +171,8 @@ function captureCards(pos, card) {
     getNeighborPositions(pos).forEach(n => {
         const { side, opposite } = sides[n];
         const other = boardState[n];
-        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !other.invincible) {
+        const isInvincible = other && other.invincible && !other.disabledPower;
+        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible) {
             if (card[side] > other[opposite]) {
                 other.owner = card.owner;
                 updateCardDisplay(n, other);
@@ -168,6 +186,8 @@ function captureCards(pos, card) {
     if (captureCount > 0) {
         showToast(captureCount > 1 ? `⚡ ${captureCount} cartas capturadas!` : '⚡ Carta capturada!', card.owner === 1 ? 'p1' : 'p2');
     }
+
+    return captureCount;
 }
  
 function checkGameEnd() {
@@ -259,7 +279,8 @@ function simulateCapture(simBoard, pos, card) {
         if (Math.abs((pos % BOARD_COLS) - (n.pos % BOARD_COLS)) > 1) return;
 
         const other = simBoard[n.pos];
-        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !other.invincible) {
+        const isInvincible = other && other.invincible && !other.disabledPower;
+        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible) {
             if (card[n.side] > other[n.opposite]) {
                 other.owner = card.owner;
                 gained++;

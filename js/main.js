@@ -5,6 +5,7 @@ function resetGame() {
     pendingSelection = null;
     usedDomainIds = new Set();
     destroyedCardIds = new Set();
+    destroyedCardsLog = [];
     winnerBox.textContent = "";
     gameEnded = false;
     toastContainer.innerHTML = "";

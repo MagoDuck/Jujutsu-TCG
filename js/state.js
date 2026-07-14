@@ -12,6 +12,7 @@ const cardModalName = document.getElementById("cardModalName");
 const cardModalPowerName = document.getElementById("cardModalPowerName");
 const cardModalPowerDesc = document.getElementById("cardModalPowerDesc");
 const shadowModal = document.getElementById("shadowModal");
+const shadowModalTitle = document.getElementById("shadowModalTitle");
 const shadowModalHint = document.getElementById("shadowModalHint");
 const shadowModalClose = document.getElementById("shadowModalClose");
 const shadowGrid = document.getElementById("shadowGrid");

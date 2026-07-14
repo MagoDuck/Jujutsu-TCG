@@ -47,7 +47,7 @@ function canPlaceDomain(card) {
 
 function isCaptureBlockedByDomain() {
     const domain = boardState[CENTER_CELL];
-    return !!(domain && domain.isDomain && domain.power === 'vazio_infinito');
+    return !!(domain && domain.isDomain && domain.power === 'vazio_infinito' && !domain.disabledPower);
 }
  
 function renderHands() {

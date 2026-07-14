@@ -206,21 +206,88 @@ function renderShadowGrid(onChoose) {
 }
 
 function openShadowSelectionModal(onChoose) {
+    shadowModalTitle.textContent = '🌑 Técnica das Dez Sombras';
     renderShadowGrid(onChoose);
     shadowModalHint.textContent = 'Escolha uma sombra para invocar';
     shadowModalClose.style.display = 'none';
+    modalCancelCallback = null;
     shadowModal.classList.add('active');
 }
 
 function openShadowBrowseModal() {
+    shadowModalTitle.textContent = '🌑 Técnica das Dez Sombras';
     renderShadowGrid(null);
-    shadowModalHint.textContent = 'As 10 sombras que Megumi pode invocar';
+    shadowModalHint.textContent = 'As 10 sombras que pode invocar';
     shadowModalClose.style.display = 'flex';
+    modalCancelCallback = null;
     shadowModal.classList.add('active');
+}
+
+let modalCancelCallback = null;
+
+function openGenericChoiceModal({ title, hint, items, onChoose, cancelLabel }) {
+    shadowModalTitle.textContent = title;
+    shadowGrid.innerHTML = '';
+    shadowModalHint.textContent = hint;
+    shadowModalClose.style.display = 'flex';
+    modalCancelCallback = () => onChoose(null);
+
+    items.forEach((item, idx) => {
+        const opt = document.createElement('div');
+        opt.className = 'shadow-option';
+        opt.dataset.choosable = 'true';
+        opt.appendChild(renderCard(item.card, null, false));
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'shadow-name';
+        nameEl.textContent = item.label;
+        opt.appendChild(nameEl);
+
+        opt.addEventListener('click', () => {
+            modalCancelCallback = null;
+            shadowModal.classList.remove('active');
+            onChoose(idx);
+        });
+        shadowGrid.appendChild(opt);
+    });
+
+    if (cancelLabel) {
+        const cancelOpt = document.createElement('div');
+        cancelOpt.className = 'shadow-option shadow-cancel';
+        cancelOpt.dataset.choosable = 'true';
+        cancelOpt.textContent = cancelLabel;
+        cancelOpt.addEventListener('click', () => {
+            modalCancelCallback = null;
+            shadowModal.classList.remove('active');
+            onChoose(null);
+        });
+        shadowGrid.appendChild(cancelOpt);
+    }
+
+    shadowModal.classList.add('active');
+}
+
+function openTrocaDeCorposModal(destroyedLog, onChoose) {
+    const items = destroyedLog.map(d => ({
+        card: createCard(d.img, d.t, d.r, d.b, d.l, d.owner, d.power, d.name, d.cardLevel),
+        label: d.name
+    }));
+    openGenericChoiceModal({
+        title: '🔁 Troca de Corpos',
+        hint: 'Sacrifique Kenjaku para trazer uma carta destruída de volta, ou cancele',
+        items,
+        onChoose,
+        cancelLabel: '❌ Não sacrificar Kenjaku'
+    });
 }
 
 function closeShadowModal() {
     shadowModal.classList.remove('active');
+    if (modalCancelCallback) {
+        const cb = modalCancelCallback;
+        modalCancelCallback = null;
+        cb();
+    }
 }
 
 shadowModal.addEventListener('click', (e) => {

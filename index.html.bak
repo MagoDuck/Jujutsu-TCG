@@ -1986,7 +1986,7 @@ function openShadowSelectionModal(onChoose) {
 
 function openShadowBrowseModal() {
     renderShadowGrid(null);
-    shadowModalHint.textContent = 'As 10 sombras que Megumi pode invocar';
+    shadowModalHint.textContent = 'As 10 sombras que pode invocar';
     shadowModalClose.style.display = 'flex';
     shadowModal.classList.add('active');
 }

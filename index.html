@@ -69,20 +69,20 @@
             <div class="tutorial-visual-row">
                 <div class="tutorial-visual-card">
                     <div id="tutorialCharCardSlot"></div>
-                    <div class="tutorial-visual-label">Feiticeiro<br><span>4 atributos (topo, direita, baixo, esquerda) + nível no canto</span></div>
+                    <div class="tutorial-visual-label">Feiticeiro<br><span>4 atributos (topo, direita, baixo, esquerda) + nível no canto inferior</span></div>
                 </div>
                 <div class="tutorial-visual-card">
                     <div id="tutorialDomainCardSlot"></div>
-                    <div class="tutorial-visual-label">Expansão de Domínio<br><span>Sem atributos: refino no canto superior + nível no canto</span></div>
+                    <div class="tutorial-visual-label">Expansão de Domínio<br><span>Refino no canto superior + nível no canto inferior</span></div>
                 </div>
             </div>
-            <p>Cartas de Feiticeiro são a maioria do seu deck e são elas que capturam e são capturadas. Expansões de Domínio são um tipo raro e especial: em vez de atributos, têm um número de <strong>refino</strong> e afetam o tabuleiro inteiro quando jogadas.</p>
+            <p>Cartas de Feiticeiro são a maioria do seu deck e são elas que capturam e são capturadas. Expansões de Domínio em vez de atributos, têm um número de <strong>Refino</strong> e afetam o tabuleiro inteiro quando jogadas.</p>
         </div>
         <div class="tutorial-step">
             <div class="tutorial-step-title">🗺️ O tabuleiro</div>
             <div id="tutorialBoardPreview" class="tutorial-board-preview"></div>
-            <p>O tabuleiro tem 5×5 casas (25 no total). A casa bem no meio, destacada em dourado, é reservada exclusivamente para Expansões de Domínio: nenhuma carta de personagem pode ser jogada nela, e nenhuma Expansão de Domínio pode ser jogada em outro lugar.</p>
-            <p>Só pode existir uma Expansão de Domínio em campo por vez. Para jogar outra por cima de uma que já está lá, o refino da nova precisa ser igual ou maior — isso destrói a anterior (que não pode mais ser usada naquela partida) e o efeito da nova passa a valer.</p>
+            <p>O tabuleiro tem 5×5 casas (25 no total). A casa bem no meio, destacada em dourado, é reservada exclusivamente para Expansões de Domínio, nenhuma carta de Feiticeiro pode ser jogada nela, e nenhuma Expansão de Domínio pode ser jogada em outro lugar.</p>
+            <p>Só pode existir uma Expansão de Domínio em campo por vez. Para jogar outra por cima de uma que já está lá, o <strong>Refino</strong> da nova precisa ser igual ou maior, isso destrói a anterior (que não pode mais ser usada naquela partida) e o efeito da nova passa a valer.</p>
         </div>
         <div class="tutorial-step">
             <div class="tutorial-step-title">▶️ Como jogar sua vez</div>
@@ -92,11 +92,11 @@
         <div class="tutorial-step">
             <div class="tutorial-step-title">⚔️ Como capturar</div>
             <p>Toda carta de feiticeiro tem 4 números: um em cima, um embaixo, um à esquerda e um à direita. Ao colocar sua carta ao lado de uma carta inimiga, o número do seu lado voltado para ela é comparado com o número do lado dela voltado para você.</p>
-            <p>Se o seu número for maior, você captura aquela carta — ela passa a ser sua, mesmo continuando na mesma casa do tabuleiro. Uma única jogada pode capturar várias cartas inimigas ao mesmo tempo, se houver mais de uma adjacente.</p>
+            <p>Se o seu número for maior, você captura aquela carta, ela passa a ser sua, mesmo continuando na mesma casa do tabuleiro. Uma única jogada pode capturar várias cartas inimigas ao mesmo tempo, se houver mais de uma adjacente.</p>
         </div>
         <div class="tutorial-step">
             <div class="tutorial-step-title">💥 Cartas destruídas</div>
-            <p>Alguns efeitos reduzem os atributos de uma carta (como poderes que cortam valores pela metade ou diminuem um atributo). Se os 4 números de uma carta chegarem a zero ao mesmo tempo, ela é <strong>destruída</strong>: sai do tabuleiro imediatamente e não pode ser usada de novo naquela partida, nem por você nem pelo oponente.</p>
+            <p>Alguns efeitos reduzem os atributos de uma carta (como poderes que cortam valores pela metade ou diminuem um atributo). Se os 4 números de uma carta chegarem a zero ao mesmo tempo, ela é <strong>destruída</strong> (sai do tabuleiro imediatamente e não pode ser usada de novo naquela partida, nem por você nem pelo oponente).</p>
         </div>
         <div class="tutorial-step">
             <div class="tutorial-step-title">✨ Cartas especiais</div>
@@ -104,9 +104,7 @@
         </div>
         <div class="tutorial-step">
             <div class="tutorial-step-title">🏆 Fim de partida</div>
-            <p>A partida termina em qualquer uma destas duas situações, o que acontecer primeiro:</p>
-            <p>• Todas as casas do tabuleiro (menos a central) ficam ocupadas;</p>
-            <p>• Nenhum dos dois jogadores tem mais cartas na mão para jogar, mesmo com casas vazias sobrando.</p>
+            <p>A partida termina quando nenhum dos dois jogadores conseguir realizar jogadas, mesmo com casa vazia sobrando.
             <p>Quando a partida acaba, vence quem tiver mais cartas suas no tabuleiro naquele momento. Empate é possível.</p>
         </div>
         <div class="tutorial-step">
@@ -133,7 +131,7 @@
 </div>
  
 <div class="hand-section" id="handSection2">
-    <h2 class="hand-title"><span id="opLabel">Cartas do Oponente</span> <span class="waiting-tag" id="waitingTag" style="display:none;">Oponente pensando…</span></h2>
+    <h2 class="hand-title"><span id="opLabel">Cartas do Oponente</span><span class="waiting-tag" id="waitingTag" style="display:none;">Oponente pensando…</span></h2>
     <div id="opponentCards"></div>
 </div>
  
@@ -189,7 +187,7 @@
 <div id="shadowModal" class="card-modal-overlay">
     <div class="card-modal shadow-modal">
         <button id="shadowModalClose" class="card-modal-close" onclick="closeShadowModal()">×</button>
-        <div class="panel-title">🌑 Técnica das Dez Sombras</div>
+        <div class="panel-title" id="shadowModalTitle">🌑 Técnica das Dez Sombras</div>
         <div id="shadowModalHint" class="shadow-modal-hint">Escolha uma sombra para invocar</div>
         <div id="shadowGrid" class="shadow-grid"></div>
     </div>

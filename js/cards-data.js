@@ -86,11 +86,11 @@ const SHADOW_CARDS = {
     nue:           { name: 'Nue',                    img: 'Img/2.jpg',  t: 9,  r: 7,  b: 8,  l: 6,  cardLevel: 3 },
     great_serpent: { name: 'Grande Serpente',         img: 'Img/3.jpg',  t: 7,  r: 10, b: 6,  l: 9,  cardLevel: 3 },
     toad:          { name: 'Gama',                    img: 'Img/4.jpg',  t: 6,  r: 7,  b: 10, l: 7,  cardLevel: 2 },
-    round_deer:    { name: 'Cervo Redondo',           img: 'Img/5.jpg',  t: 9,  r: 8,  b: 9,  l: 8,  cardLevel: 3 },
+    round_deer:    { name: 'Cervo Redondo',           img: 'Img/cervo.jpg',  t: 9,  r: 8,  b: 9,  l: 8,  cardLevel: 3 },
     max_elephant:  { name: 'Elefante Máximo',         img: 'Img/6.jpg',  t: 12, r: 9,  b: 8,  l: 7,  cardLevel: 4 },
     ox:            { name: 'Touro Perfurante',                   img: 'Img/Touro.jpg',  t: 9,  r: 12, b: 7,  l: 8,  cardLevel: 4 },
     rabbit_escape: { name: 'Fuga do Coelho',          img: 'Img/10.jpg', t: 6,  r: 6,  b: 6,  l: 14, cardLevel: 3 },
-    piercing_dog:  { name: 'Funeral do Tigre',   img: 'Img/11.jpg', t: 11, r: 13, b: 8,  l: 9,  cardLevel: 4 },
+    piercing_dog:  { name: 'Funeral do Tigre',   img: 'Img/tigre.jpg', t: 11, r: 13, b: 8,  l: 9,  cardLevel: 4 },
     mahoraga:      { name: 'Mahoraga',                img: 'Img/Mahoraga.jpg', t: 16, r: 16, b: 15, l: 15, cardLevel: 5, power: 'adaptacao' }
 };
 

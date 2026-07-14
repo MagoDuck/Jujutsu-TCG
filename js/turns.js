@@ -1,6 +1,11 @@
 function updateCardDisplay(pos, card) {
     const cell = board.children[pos];
-    if (cell && card) {
+    if (!cell || !card) return;
+
+    const existing = cell.querySelector('.card');
+    if (existing) {
+        paintCard(existing, card, false);
+    } else {
         cell.innerHTML = '';
         cell.appendChild(renderCard(card));
     }
@@ -33,7 +38,7 @@ function placeCard(pos) {
 
     if (card.isDomain) {
         if (pos !== CENTER_CELL) {
-            showToast('Expansões de Domínio só podem ser jogadas na casa central!', 'p2');
+            showToast(t('toastDomainCenterOnly'), 'p2');
             return;
         }
         const check = canPlaceDomain(card);
@@ -44,13 +49,13 @@ function placeCard(pos) {
         if (check.overriding) {
             const old = check.overriding;
             usedDomainIds.add(old.cardId);
-            showToast(`💥 ${old.name} foi sobreposto(a) e destruído(a) por ${card.name}!`, 'gold');
+            showToast(t('toastDomainOverridden', old.name, card.name), 'gold');
             boardState[CENTER_CELL] = null;
             const oldCell = board.children[CENTER_CELL];
             if (oldCell) oldCell.innerHTML = '';
         }
     } else if (pos === CENTER_CELL) {
-        showToast('A casa central é exclusiva para Expansões de Domínio!', 'p2');
+        showToast(t('toastCenterExclusive'), 'p2');
         return;
     }
 
@@ -147,15 +152,27 @@ function continueTurn(pos, card) {
     }
 }
 
+function canCardBePlaced(card) {
+    if (card.isDomain) return canPlaceDomain(card).ok;
+    return boardState.some((c, i) => c === null && i !== CENTER_CELL);
+}
+
+function playerHasValidMove(deck) {
+    return !!deck && deck.some(canCardBePlaced);
+}
+
 function determineNextPlayer(mover) {
     const other = mover === 1 ? 2 : 1;
     const otherDeck = other === 1 ? playerDeck : opponentDeck;
-    return otherDeck.length > 0 ? other : mover;
+    const moverDeck = mover === 1 ? playerDeck : opponentDeck;
+
+    if (playerHasValidMove(otherDeck)) return other;
+    if (playerHasValidMove(moverDeck)) return mover;
+    return mover;
 }
 
 function captureCards(pos, card) {
     if (isCaptureBlockedByDomain()) {
-        showToast('🕳️ Vazio Infinito impede qualquer captura!', 'p2');
         return 0;
     }
 
@@ -184,7 +201,7 @@ function captureCards(pos, card) {
     });
 
     if (captureCount > 0) {
-        showToast(captureCount > 1 ? `⚡ ${captureCount} cartas capturadas!` : '⚡ Carta capturada!', card.owner === 1 ? 'p1' : 'p2');
+        showToast(captureCount > 1 ? t('toastCardsCaptured', captureCount) : t('toastCardCaptured'), card.owner === 1 ? 'p1' : 'p2');
     }
 
     return captureCount;
@@ -201,7 +218,11 @@ function checkGameEnd() {
     // mesmo que ainda existam casas vazias no tabuleiro.
     const bothHandsEmpty = playerDeck.length === 0 && opponentDeck.length === 0;
 
-    if (boardFull || bothHandsEmpty) {
+    // ...ou quando nenhum dos dois consegue mais realizar uma jogada válida
+    // (ex: só resta um domínio com Refino insuficiente para o que está em campo).
+    const noOneCanMove = !playerHasValidMove(playerDeck) && !playerHasValidMove(opponentDeck);
+
+    if (boardFull || bothHandsEmpty || noOneCanMove) {
         declareWinnerAndEndMatch();
     }
 }
@@ -223,18 +244,18 @@ function declareWinnerAndEndMatch() {
             highestUnlockedLevel++;
             savePlayerProgress();
             const newlyUnlocked = Object.keys(CARD_LIBRARY).filter(id => CARD_LIBRARY[id].unlockLevel === highestUnlockedLevel);
-            unlockMsg = `<br><span style="font-size:16px;">🔓 Nível ${highestUnlockedLevel} desbloqueado!</span>`;
+            unlockMsg = `<br><span style="font-size:16px;">${t('levelUnlocked', highestUnlockedLevel)}</span>`;
             if (newlyUnlocked.length) {
-                showToast(`Nova carta desbloqueada: ${getCardDisplayName(newlyUnlocked[0])}!`, 'gold');
+                showToast(t('newCardUnlocked', getCardDisplayName(newlyUnlocked[0])), 'gold');
             }
         } else if (currentLevel === highestUnlockedLevel && highestUnlockedLevel >= TOTAL_LEVELS) {
-            unlockMsg = `<br><span style="font-size:16px;">🎉 Você dominou todos os níveis!</span>`;
+            unlockMsg = `<br><span style="font-size:16px;">${t('allLevelsMastered')}</span>`;
         }
-        winnerBox.innerHTML = `<span style="color:#ffd700;">🏆 Nível ${currentLevel} vencido!</span>${unlockMsg}`;
+        winnerBox.innerHTML = `<span style="color:#ffd700;">${t('levelWon', currentLevel)}</span>${unlockMsg}`;
     } else if (p2 > p1) {
-        winnerBox.innerHTML = `<span style="color:#ffd700;">💀 Você Perdeu. Tente novamente!</span>`;
+        winnerBox.innerHTML = `<span style="color:#ffd700;">${t('youLost')}</span>`;
     } else {
-        winnerBox.innerHTML = `<span style="color:#ffd700;">⚖️ Empate!</span>`;
+        winnerBox.innerHTML = `<span style="color:#ffd700;">${t('draw')}</span>`;
     }
 
     postMatchActions.style.display = 'flex';

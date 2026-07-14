@@ -70,7 +70,7 @@ function destroyZeroAttributeCards() {
                 cell.innerHTML = '';
             }
 
-            showToast(`💥 ${c.name} teve todos os atributos zerados e foi destruída!`, 'p2');
+            showToast(t('toastCardDestroyed', c.name), 'p2');
         }
     }
 }
@@ -99,12 +99,10 @@ function executePower(pos, card, powerType, onDone) {
             break;
         case 'vazio_infinito':
             spawnPowerRing(pos, 'vazio_infinito');
-            showToast('🕳️ Vazio Infinito expandido! Nenhuma carta pode mais mudar de lado!', 'gold');
             onDone();
             break;
         case 'santuario_malevolente':
             spawnPowerRing(pos, 'santuario_malevolente');
-            showToast('🩸 Santuário Malevolente expandido! Todas as cartas em campo perdem metade dos atributos!', 'gold');
             onDone();
             break;
         case 'auto_personificacao':
@@ -175,7 +173,6 @@ function applyJackpotPower(pos, card) {
     card.original_b = card.base_b = card.b;
     card.original_l = card.base_l = card.l;
     updateCardDisplay(pos, card);
-    showToast('🎰 Jackpot! Atributos sorteados!', 'gold');
 }
 
 function triggerBoogieWoogie(pos, card, onDone) {
@@ -186,7 +183,6 @@ function triggerBoogieWoogie(pos, card, onDone) {
     }
 
     if (targets.length === 0) {
-        showToast('🔄 Nenhuma carta em campo para trocar!', 'p2');
         onDone();
         return;
     }
@@ -204,10 +200,6 @@ function triggerBoogieWoogie(pos, card, onDone) {
                 const el = board.children[p].querySelector('.card');
                 if (el) el.classList.add('just-placed');
             });
-
-            showToast('🔄 Boogie Woogie! Cartas trocaram de posição!', 'gold');
-        } else {
-            showToast('🔄 Troca cancelada.', 'p2');
         }
         onDone();
     };
@@ -227,7 +219,7 @@ function beginBoogieSelection(pos, targets, resolve) {
     targets.forEach(i => board.children[i].classList.add('valid-target'));
     const hostCard = board.children[pos].querySelector('.card');
     if (hostCard) hostCard.classList.add('selected');
-    showToast('🔄 Escolha uma carta para trocar (ou toque em Todo novamente para cancelar)', 'p1');
+    showToast(t('toastBoogieSelect'), 'p1');
 }
 
 function applyCopiarPower(pos, card, onDone) {
@@ -240,13 +232,11 @@ function applyCopiarPower(pos, card, onDone) {
         }
     }
     if (candidates.length === 0) {
-        showToast('📋 Nenhuma habilidade para copiar!', 'p2');
         onDone();
         return;
     }
     const copiedPower = candidates[Math.floor(Math.random() * candidates.length)];
     card.power = copiedPower;
-    showToast(`📋 Cópia ativada! Poder copiado: ${POWER_SYMBOLS[copiedPower] || ''} ${copiedPower.replace(/_/g, ' ')}`, 'gold');
     executePower(pos, card, copiedPower, onDone);
 }
 
@@ -258,7 +248,6 @@ function triggerDezSombras(pos, card, onDone) {
     }
 
     if (emptyCells.length === 0) {
-        showToast('🌑 Sem espaço para invocar uma sombra!', 'p2');
         onDone();
         return;
     }
@@ -266,12 +255,11 @@ function triggerDezSombras(pos, card, onDone) {
     const finish = (shadowId) => {
         const shadow = SHADOW_CARDS[shadowId];
         const summonPos = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        const shadowCard = createCard(shadow.img, shadow.t, shadow.r, shadow.b, shadow.l, card.owner, shadow.power || null, shadow.name, shadow.cardLevel);
+        const shadowCard = createCard(shadow.img, shadow.t, shadow.r, shadow.b, shadow.l, card.owner, shadow.power || null, getShadowDisplayName(shadowId), shadow.cardLevel);
         boardState[summonPos] = shadowCard;
         updateCardDisplay(summonPos, shadowCard);
         const cardEl = board.children[summonPos].querySelector('.card');
         if (cardEl) cardEl.classList.add('just-placed');
-        showToast(`🌑 ${shadow.name} invocado(a) pela Técnica das Dez Sombras!`, card.owner === 1 ? 'p1' : 'p2');
 
         if (shadowId === 'mahoraga' && boardState[pos] === card) {
             logDestroyedCard(card);
@@ -279,7 +267,6 @@ function triggerDezSombras(pos, card, onDone) {
             boardState[pos] = null;
             const hostCell = board.children[pos];
             if (hostCell) hostCell.innerHTML = '';
-            showToast(`💀 Mahoraga se adapta e destrói ${card.name}!`, 'p2');
         }
         onDone();
     };
@@ -294,7 +281,6 @@ function triggerDezSombras(pos, card, onDone) {
 
 function applyInfinitoPower(pos, card) {
     spawnPowerRing(pos, 'infinito');
-    showToast('♾️ Infinito ativado! Carta imune a capturas!', 'gold');
     card.invincible = true;
 }
 
@@ -315,7 +301,6 @@ function applyErupcaoVulcanicaPower(pos, card) {
             spawnFloatNumber(n, '-2 ' + randomAttr.toUpperCase(), false);
         }
     });
-    showToast('🌋 Erupção Vulcânica! -2 em atributo aleatório!', 'gold');
 }
 
 function swapTopBottomLeftRight(target) {
@@ -332,24 +317,18 @@ function swapTopBottomLeftRight(target) {
 
 function applyTransfiguracaoDeAlmaPower(pos, card) {
     spawnPowerRing(pos, 'transfiguracao_de_alma');
-    let affected = 0;
     getNeighborPositions(pos).forEach(n => {
         const target = boardState[n];
         if (target && !target.isDomain && target.owner !== card.owner && !target.frozen) {
             swapTopBottomLeftRight(target);
             updateCardDisplay(n, target);
             spawnFloatNumber(n, '🔄', true);
-            affected++;
         }
     });
-    showToast(affected > 0
-        ? '🤚 Transfiguração de Alma! Atributos das cartas inimigas trocados de lugar!'
-        : '🤚 Nenhuma carta inimiga adjacente para transfigurar!', affected > 0 ? 'gold' : 'p2');
 }
 
 function applyAutoPersonificacaoPower(pos, card) {
     spawnPowerRing(pos, 'auto_personificacao');
-    let affected = 0;
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (i === pos) continue;
         const target = boardState[i];
@@ -357,18 +336,13 @@ function applyAutoPersonificacaoPower(pos, card) {
             swapTopBottomLeftRight(target);
             updateCardDisplay(i, target);
             spawnFloatNumber(i, '🔄', true);
-            affected++;
         }
     }
-    showToast(affected > 0
-        ? '🎭 Auto-Personificação da Perfeição! Atributos de todas as cartas em campo trocados de lugar!'
-        : '🎭 Nenhuma carta em campo para transfigurar!', affected > 0 ? 'gold' : 'p2');
 }
 
 function applyMarBrilhantePower(pos, card) {
     spawnPowerRing(pos, 'mar_brilhante');
     const attrs = ['t', 'r', 'b', 'l'];
-    let affected = 0;
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (i === pos) continue;
         const target = boardState[i];
@@ -379,17 +353,12 @@ function applyMarBrilhantePower(pos, card) {
             target[randomAttr] += 5;
             updateCardDisplay(i, target);
             spawnFloatNumber(i, '+5 ' + randomAttr.toUpperCase(), true);
-            affected++;
         }
     }
-    showToast(affected > 0
-        ? 'Mar Brilhante de Galhos Crescentes! +5 em um atributo aleatório de cada carta em campo!'
-        : 'Nenhuma carta em campo para fortalecer!', affected > 0 ? 'gold' : 'p2');
 }
 
 function applyDesmantelarPower(pos, card) {
     spawnPowerRing(pos, 'desmantelar');
-    let affected = 0;
     getNeighborPositions(pos).forEach(n => {
         const target = boardState[n];
         if (target && !target.isDomain && !target.frozen) {
@@ -400,12 +369,8 @@ function applyDesmantelarPower(pos, card) {
             target.base_l = target.l;
             updateCardDisplay(n, target);
             spawnFloatNumber(n, '½', false);
-            affected++;
         }
     });
-    showToast(affected > 0
-        ? '👹 Desmantelar! Cartas ao lado têm os atributos reduzidos pela metade!'
-        : '👹 Nenhuma carta ao lado para desmantelar!', affected > 0 ? 'gold' : 'p2');
 }
 
 function applyDeterminacaoPower(pos, card, count) {
@@ -417,7 +382,6 @@ function applyDeterminacaoPower(pos, card, count) {
     spawnPowerRing(pos, 'determinacao');
     updateCardDisplay(pos, card);
     spawnFloatNumber(pos, '+' + bonus, true);
-    showToast(`💪 Determinação! +${bonus} em todos os atributos!`, 'gold');
 }
 
 function triggerCordaNegra(pos, card, onDone) {
@@ -429,7 +393,6 @@ function triggerCordaNegra(pos, card, onDone) {
     }
 
     if (candidates.length === 0) {
-        showToast('⛓️ Nenhuma carta com poder para anular!', 'p2');
         onDone();
         return;
     }
@@ -441,9 +404,6 @@ function triggerCordaNegra(pos, card, onDone) {
             card.cordaNegraTargetId = target.cardId || null;
             card.cordaNegraTargetPos = targetPos;
             updateCardDisplay(targetPos, target);
-            showToast(`⛓️ Corda Negra! O poder de ${target.name} foi anulado!`, 'gold');
-        } else {
-            showToast('⛓️ Corda Negra não foi usada.', 'p2');
         }
         onDone();
     };
@@ -462,7 +422,7 @@ function beginCordaNegraSelection(pos, targets, resolve) {
     targets.forEach(i => board.children[i].classList.add('valid-target'));
     const hostCard = board.children[pos].querySelector('.card');
     if (hostCard) hostCard.classList.add('selected');
-    showToast('⛓️ Escolha uma carta para anular o poder (ou toque em Miguel novamente para cancelar)', 'p1');
+    showToast(t('toastCordaNegraSelect'), 'p1');
 }
 
 function triggerTrocaDeCorpos(pos, card, onDone) {
@@ -473,7 +433,6 @@ function triggerTrocaDeCorpos(pos, card, onDone) {
 
     const proceed = (choiceIndex) => {
         if (choiceIndex === null || choiceIndex === undefined) {
-            showToast('🔁 Troca de Corpos não foi usada.', 'p2');
             onDone();
             return;
         }
@@ -490,7 +449,6 @@ function triggerTrocaDeCorpos(pos, card, onDone) {
         updateCardDisplay(pos, newCard);
         const cardEl = board.children[pos].querySelector('.card');
         if (cardEl) cardEl.classList.add('just-placed');
-        showToast(`🔁 Troca de Corpos! ${newCard.name} retornou ao campo!`, newCard.owner === 1 ? 'p1' : 'p2');
         onDone();
     };
 
@@ -520,7 +478,6 @@ function applyBestaMiticaAmbarExplosion(pos, card) {
             spawnFloatNumber(n, '-5', false);
         }
     });
-    showToast(`🐴 ${card.name} se autodestrói! Cartas inimigas adjacentes perdem 5 pontos em todos os atributos!`, 'gold');
     logDestroyedCard(card);
     releaseCordaNegraTarget(card);
     boardState[pos] = null;

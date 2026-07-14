@@ -24,6 +24,14 @@ function resetGame() {
     renderMenuStats();
 }
  
+function onLanguageChanged() {
+    if (!deckScreen.classList.contains('hidden')) renderDeckScreen();
+    if (!levelScreen.classList.contains('hidden')) renderLevelScreen();
+    if (!gameScreen.classList.contains('hidden')) updateTurnBanner(currentPlayer === 2 && turnBanner.classList.contains('thinking'));
+    if (!settingsScreen.classList.contains('hidden')) refreshSettingsScreen();
+    renderMenuStats();
+}
+
 initializePlayerProgress();
 resetGame();
 showScreen('menu');

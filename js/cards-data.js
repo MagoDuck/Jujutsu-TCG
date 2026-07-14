@@ -51,26 +51,6 @@ const POWER_SYMBOLS = {
     'besta_mitica_ambar': '🐴'
 };
 
-const POWER_DESCRIPTIONS = {
-    'jackpot': 'Enquanto estiver na mão, todos os atributos desta carta permanecem ocultos (?). Ao ser colocada em campo, seus atributos são sorteados e ficam fixos até o fim da partida. A chance de vir valores altos é de 90% se for a primeira carta jogada no tabuleiro, caindo 10% a cada carta já em campo. (Esse poder ocorre antes da comparação de pontos)',
-    'boogie_woogie': 'Ao entrar em campo, você pode escolher qualquer carta em jogo, aliada ou inimiga. Se escolher uma, Todo troca instantaneamente de posição com ela. (Esse poder ocorre antes da comparação de pontos)',
-    'copiar': 'Ao entrar em campo, copia aleatoriamente a habilidade de uma carta que já esteja em jogo. A habilidade copiada permanece ativa enquanto Yuta permanecer em campo. (Esse poder ocorre antes da comparação de pontos)',
-    'dez_sombras': 'Ao colocar esta carta em campo, escolha uma das 10 cartas da categoria Sombras para ser invocada imediatamente em um espaço livre. Se a carta escolhida for Mahoraga, a carta invocadora é destruída após a invocação. (Esse poder ocorre antes da comparação de pontos)',
-    'desmantelar': 'Ao entrar em campo, todas as cartas adjacentes a Sukuna, aliadas ou inimigas, têm todos os seus atributos reduzidos pela metade, permanentemente. (Esse poder ocorre depois da comparação de pontos, funciona apenas uma vez, quando a carta é jogada, e não dura por rodadas)',
-    'infinito': 'Esta carta não pode ser capturada, convertida ou virada pelo adversário por qualquer efeito ou comparação de atributos.',
-    'erupcao_vulcanica': 'Ao entrar em campo, todas as cartas adjacentes inimigas recebem -2 em um atributo aleatório. (Esse poder ocorre antes da comparação de pontos)',
-    'transfiguracao_de_alma': 'Ao entrar em campo, Mahito toca as cartas inimigas adjacentes e troca o valor dos seus atributos de lugar: o de cima vai para baixo, o de baixo vai para cima, e os dois das laterais trocam entre si. (Esse poder ocorre antes da comparação de pontos)',
-    'vazio_infinito': 'Enquanto esta Expansão de Domínio estiver em campo, nenhuma carta pode mudar de lado: capturas ficam completamente bloqueadas para os dois jogadores.',
-    'santuario_malevolente': 'Enquanto esta Expansão de Domínio estiver em campo, todas as cartas do tabuleiro perdem metade dos pontos em todos os atributos.',
-    'auto_personificacao': 'Assim que é jogada, troca a posição dos atributos de todas as cartas em campo: o de cima vai para baixo, o de baixo vai para cima, e os das laterais trocam entre si. (Esse poder ocorre antes da comparação de pontos)',
-    'mar_brilhante': 'Assim que é jogada, aumenta em +5 um atributo aleatório de cada carta em campo. (Esse poder ocorre antes da comparação de pontos)',
-    'troca_de_corpos': 'O jogador pode escolher sacrificar esta carta para trazer de volta uma carta que foi destruída (aliada ou inimiga, à escolha, se houver mais de uma). A carta revivida surge no lugar onde Kenjaku estava. (Esse poder ocorre antes da comparação de pontos)',
-    'determinacao': 'Para cada carta inimiga virada (capturada) nesta jogada, esta carta recebe +2 em todos os atributos. (Esse poder ocorre depois da comparação de pontos)',
-    'adaptacao': 'Assim que entra em campo, esta carta destrói quem a invocou. A cada rodada, esta carta ganha +2 em todos os atributos.',
-    'corda_negra': 'Ao entrar em campo, escolha uma carta em jogo, aliada ou inimiga. A habilidade dessa carta é anulada até esta carta sair de campo. (Esse poder ocorre depois da comparação de pontos, e esse poder não pode ser copiado)',
-    'besta_mitica_ambar': 'Esta carta dura 3 rodadas em campo antes de se autodestruir. Quando isso acontece, todas as cartas adjacentes inimigas perdem 5 pontos em todos os atributos.'
-};
- 
 const CARD_NAMES = {
     c1: 'Ryomen Sukuna', c2: 'Satoro Gojo', c3: 'Yuji Itadori', c4: 'Mahito', c5: 'Dagon',
     c6: 'Jogo', c7: 'Toji Fushiguro', c8: 'Yuta Okkotsu', c9: 'Choso', c10: 'Aoi Todo',
@@ -91,7 +71,7 @@ const SHADOW_CARDS = {
     ox:            { name: 'Touro Perfurante',                   img: 'Img/Touro.jpg',  t: 9,  r: 12, b: 7,  l: 8,  cardLevel: 4 },
     rabbit_escape: { name: 'Fuga do Coelho',          img: 'Img/10.jpg', t: 6,  r: 6,  b: 6,  l: 14, cardLevel: 3 },
     piercing_dog:  { name: 'Funeral do Tigre',   img: 'Img/tigre.jpg', t: 11, r: 13, b: 8,  l: 9,  cardLevel: 4 },
-    mahoraga:      { name: 'Mahoraga',                img: 'Img/Mahoraga.jpg', t: 16, r: 16, b: 15, l: 15, cardLevel: 5, power: 'adaptacao' }
+    mahoraga:      { name: 'Mahoraga',                img: 'Img/Mahoraga.jpg', t: 1, r: 1, b: 1, l: 1, cardLevel: 5, power: 'adaptacao' }
 };
 
 const MAX_DECK_SIZE = 99;

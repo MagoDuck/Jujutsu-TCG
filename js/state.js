@@ -28,6 +28,7 @@ const mainMenu = document.getElementById("mainMenu");
 const deckScreen = document.getElementById("deckScreen");
 const levelScreen = document.getElementById("levelScreen");
 const tutorialScreen = document.getElementById("tutorialScreen");
+const settingsScreen = document.getElementById("settingsScreen");
 const gameScreen = document.getElementById("gameScreen");
 const menuDeckInfo = document.getElementById("menuDeckInfo");
 const menuLevelInfo = document.getElementById("menuLevelInfo");
@@ -50,7 +51,14 @@ const installStatus = document.getElementById("installStatus");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsModal = document.getElementById("settingsModal");
 const winnerOverlay = document.getElementById("winnerOverlay");
- 
+const menuSettingsBtn = document.getElementById("menuSettingsBtn");
+const settingsBackBtn = document.getElementById("settingsBackBtn");
+const langPtBtn = document.getElementById("langPtBtn");
+const langEnBtn = document.getElementById("langEnBtn");
+const muteToggle = document.getElementById("muteToggle");
+const volumeSlider = document.getElementById("volumeSlider");
+const bgMusic = document.getElementById("bgMusic");
+
 let playerDeckTemplate = [];
 let highestUnlockedLevel = 1;
 let currentLevel = 1;

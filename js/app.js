@@ -7,6 +7,13 @@ document.getElementById("tutorialBtn").onclick = () => showTutorialScreen();
 document.getElementById("tutorialBackBtn").onclick = () => showScreen("menu");
 document.getElementById("gameMenuBtn").onclick = () => { closeSettingsModal(); showScreen("menu"); };
 document.getElementById("backToLevelsBtn").onclick = () => { closeWinnerOverlay(); showLevelScreen(); };
+
+menuSettingsBtn.onclick = () => showSettingsScreen();
+settingsBackBtn.onclick = () => showScreen("menu");
+langPtBtn.onclick = () => { setLanguage('pt'); refreshSettingsScreen(); };
+langEnBtn.onclick = () => { setLanguage('en'); refreshSettingsScreen(); };
+muteToggle.addEventListener('change', () => setMusicMuted(!muteToggle.checked));
+volumeSlider.addEventListener('input', () => setMusicVolume(volumeSlider.value / 100));
  
 settingsBtn.onclick = () => settingsModal.classList.add('active');
 function closeSettingsModal(){ settingsModal.classList.remove('active'); }
@@ -63,35 +70,35 @@ function updateInstallStatus(message = "") {
 function initInstallExperience() {
     const runningStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
     if (runningStandalone) {
-        updateInstallStatus("App em modo instalado.");
+        updateInstallStatus(t('installedStandalone'));
     }
- 
+
     window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
         deferredInstallPrompt = event;
         installBtn.classList.remove("hidden");
-        updateInstallStatus("Instalação disponível neste navegador.");
+        updateInstallStatus(t('installAvailable'));
     });
- 
+
     installBtn.addEventListener("click", async () => {
         if (!deferredInstallPrompt) return;
- 
+
         deferredInstallPrompt.prompt();
         const choice = await deferredInstallPrompt.userChoice;
         if (choice.outcome === "accepted") {
-            updateInstallStatus("Instalação iniciada.");
+            updateInstallStatus(t('installStarted'));
         } else {
-            updateInstallStatus("Instalação cancelada.");
+            updateInstallStatus(t('installCancelled'));
         }
- 
+
         deferredInstallPrompt = null;
         installBtn.classList.add("hidden");
     });
- 
+
     window.addEventListener("appinstalled", () => {
         deferredInstallPrompt = null;
         installBtn.classList.add("hidden");
-        updateInstallStatus("App instalado com sucesso.");
+        updateInstallStatus(t('installSuccess'));
     });
 }
  
@@ -102,7 +109,7 @@ async function registerServiceWorker() {
     navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (reloadedForUpdate) return;
         reloadedForUpdate = true;
-        showToast("🔄 Atualizando para a nova versão...", "gold");
+        showToast(t('updatingNewVersion'), "gold");
         setTimeout(() => window.location.reload(), 600);
     });
 
@@ -130,10 +137,10 @@ function updateTurnBanner(thinking) {
     turnBanner.classList.remove("p1-turn", "p2-turn", "thinking");
     if (currentPlayer === 1) {
         turnBanner.classList.add("p1-turn");
-        turnBannerText.textContent = "Sua vez";
+        turnBannerText.textContent = t('yourTurn');
     } else {
         turnBanner.classList.add("p2-turn");
-        turnBannerText.textContent = "Vez do Oponente";
+        turnBannerText.textContent = t('opponentTurn');
     }
     if (thinking) turnBanner.classList.add("thinking");
  

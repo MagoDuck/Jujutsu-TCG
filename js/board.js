@@ -37,12 +37,12 @@ function highlightValidTargets() {
 
 function canPlaceDomain(card) {
     if (usedDomainIds.has(card.cardId)) {
-        return { ok: false, reason: 'Este domínio já foi destruído nesta partida e não pode ser usado novamente.' };
+        return { ok: false, reason: t('domainAlreadyDestroyed') };
     }
     const existing = boardState[CENTER_CELL];
     if (!existing || !existing.isDomain) return { ok: true };
     if (card.refino >= existing.refino) return { ok: true, overriding: existing };
-    return { ok: false, reason: `Refino insuficiente! ${existing.name} (Refino ${existing.refino}) só pode ser sobreposto por um domínio de Refino ${existing.refino} ou maior.` };
+    return { ok: false, reason: t('domainInsufficientRefino', existing.name, existing.refino) };
 }
 
 function isCaptureBlockedByDomain() {
@@ -82,53 +82,87 @@ function selectCard(player, index) {
     highlightValidTargets();
 }
  
-function renderCard(card, click, isSelected = false, isHidden = false) {
-    const div = document.createElement("div");
-    div.classList.add("card");
-    div.style.backgroundImage = `url('${card.img}')`;
-    div.classList.add(card.owner === 1 ? "owner1" : "owner2");
- 
-    if (card.owner === 2 && isHidden) {
-        div.classList.add('opponent-hand');
-    }
- 
-    if (isSelected) {
-        div.classList.add('selected');
-    }
-    
-    if (isHidden && card.owner === 2) {
-        div.classList.add('card-hidden');
-        div.style.backgroundImage = 'none';
-    }
- 
-    if (card.frozen && !isHidden) {
-        div.classList.add('frozen');
-    }
+function paintCard(div, card, isHidden = false) {
+    div.classList.toggle('owner1', card.owner === 1);
+    div.classList.toggle('owner2', card.owner === 2);
+    div.classList.toggle('opponent-hand', !!(card.owner === 2 && isHidden));
+    div.classList.toggle('card-hidden', !!(isHidden && card.owner === 2));
+    div.classList.toggle('frozen', !!(card.frozen && !isHidden));
+
+    div.style.backgroundImage = (isHidden && card.owner === 2) ? 'none' : `url('${card.img}')`;
+    div.style.cursor = isHidden ? 'default' : '';
 
     if (card.isDomain) {
         div.classList.add('domain-card');
+        paintDomainContent(div, card);
+    } else {
+        div.classList.remove('domain-card');
+        paintCharacterContent(div, card);
+    }
+}
+
+function paintDomainContent(div, card) {
+    const refinoEl = div.querySelector('.domain-refino');
+    const levelEl = div.querySelector('.card-level');
+    if (!refinoEl || !levelEl || div.querySelector('.values')) {
         div.innerHTML = `
             <div class="domain-refino">${card.refino || 0}</div>
             <div class="card-level"> ${card.cardLevel || 1}</div>
         `;
-    } else {
-        const tSymbol = card.hiddenStats ? '?' : toSymbol(card.t);
-        const rSymbol = card.hiddenStats ? '?' : toSymbol(card.r);
-        const bSymbol = card.hiddenStats ? '?' : toSymbol(card.b);
-        const lSymbol = card.hiddenStats ? '?' : toSymbol(card.l);
+        return;
+    }
+    refinoEl.textContent = '' + (card.refino || 0);
+    levelEl.textContent = ' ' + (card.cardLevel || 1);
+}
 
-        const topColor = getValueColor(card.t, card.original_t, card.frozen);
-        const rightColor = getValueColor(card.r, card.original_r, card.frozen);
-        const bottomColor = getValueColor(card.b, card.original_b, card.frozen);
-        const leftColor = getValueColor(card.l, card.original_l, card.frozen);
-
+function paintCharacterContent(div, card) {
+    const hasValueSlots = div.querySelectorAll('.values').length === 4 && div.querySelector('.card-level');
+    if (!hasValueSlots || div.querySelector('.domain-refino')) {
         div.innerHTML = `
-            <div class="values top ${topColor}">${tSymbol}</div>
-            <div class="values right ${rightColor}">${rSymbol}</div>
-            <div class="values bottom ${bottomColor}">${bSymbol}</div>
-            <div class="values left ${leftColor}">${lSymbol}</div>
-            <div class="card-level"> ${card.cardLevel || 1}</div>
+            <div class="values top"></div>
+            <div class="values right"></div>
+            <div class="values bottom"></div>
+            <div class="values left"></div>
+            <div class="card-level"></div>
         `;
+    }
+
+    const tSymbol = card.hiddenStats ? '?' : toSymbol(card.t);
+    const rSymbol = card.hiddenStats ? '?' : toSymbol(card.r);
+    const bSymbol = card.hiddenStats ? '?' : toSymbol(card.b);
+    const lSymbol = card.hiddenStats ? '?' : toSymbol(card.l);
+
+    const topColor = getValueColor(card.t, card.original_t, card.frozen);
+    const rightColor = getValueColor(card.r, card.original_r, card.frozen);
+    const bottomColor = getValueColor(card.b, card.original_b, card.frozen);
+    const leftColor = getValueColor(card.l, card.original_l, card.frozen);
+
+    const topEl = div.querySelector('.values.top');
+    topEl.className = `values top ${topColor}`;
+    topEl.textContent = tSymbol;
+
+    const rightEl = div.querySelector('.values.right');
+    rightEl.className = `values right ${rightColor}`;
+    rightEl.textContent = rSymbol;
+
+    const bottomEl = div.querySelector('.values.bottom');
+    bottomEl.className = `values bottom ${bottomColor}`;
+    bottomEl.textContent = bSymbol;
+
+    const leftEl = div.querySelector('.values.left');
+    leftEl.className = `values left ${leftColor}`;
+    leftEl.textContent = lSymbol;
+
+    div.querySelector('.card-level').textContent = ' ' + (card.cardLevel || 1);
+}
+
+function renderCard(card, click, isSelected = false, isHidden = false) {
+    const div = document.createElement("div");
+    div.classList.add("card");
+    paintCard(div, card, isHidden);
+
+    if (isSelected) {
+        div.classList.add('selected');
     }
 
     if (click && !isHidden) {
@@ -137,11 +171,7 @@ function renderCard(card, click, isSelected = false, isHidden = false) {
             click();
         });
     }
- 
-    if (isHidden) {
-        div.style.cursor = 'default';
-    }
- 
+
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
         if (isHidden) return;

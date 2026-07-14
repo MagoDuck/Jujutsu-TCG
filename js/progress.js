@@ -1,7 +1,7 @@
 function createOwnedCard(cardId, owner) {
     const data = CARD_LIBRARY[cardId];
     if (!data) return null;
-    const card = createCard(data.img, data.t, data.r, data.b, data.l, owner, data.power, CARD_NAMES[cardId], data.cardLevel, data.isDomain, data.refino);
+    const card = createCard(data.img, data.t, data.r, data.b, data.l, owner, data.power, getCardDisplayName(cardId), data.cardLevel, data.isDomain, data.refino);
     card.cardId = cardId;
     return card;
 }
@@ -18,4 +18,9 @@ function initializePlayerProgress() {
     renderMenuStats();
     savePlayerProgress();
 }
-function getCardDisplayName(cardId) { return CARD_NAMES[cardId] || 'Carta'; }
+function getCardDisplayName(cardId) {
+    const dict = TRANSLATIONS[currentLanguage] || TRANSLATIONS.pt;
+    if (dict.domainNames && dict.domainNames[cardId]) return dict.domainNames[cardId];
+    if (TRANSLATIONS.pt.domainNames && TRANSLATIONS.pt.domainNames[cardId]) return TRANSLATIONS.pt.domainNames[cardId];
+    return CARD_NAMES[cardId] || t('cardFallbackName');
+}

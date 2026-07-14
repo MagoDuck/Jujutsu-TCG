@@ -3,14 +3,27 @@ function showScreen(name) {
     deckScreen.classList.toggle('hidden', name !== 'deck');
     levelScreen.classList.toggle('hidden', name !== 'levels');
     tutorialScreen.classList.toggle('hidden', name !== 'tutorial');
+    settingsScreen.classList.toggle('hidden', name !== 'settings');
     gameScreen.classList.toggle('hidden', name !== 'game');
     renderMenuStats();
 }
+
+function refreshSettingsScreen() {
+    langPtBtn.classList.toggle('active', currentLanguage === 'pt');
+    langEnBtn.classList.toggle('active', currentLanguage === 'en');
+    muteToggle.checked = !isMusicMuted();
+    volumeSlider.value = Math.round(getMusicVolume() * 100);
+}
+
+function showSettingsScreen() {
+    refreshSettingsScreen();
+    showScreen('settings');
+}
 function renderMenuStats() {
     const totalLevel = getDeckTotalLevel();
-    menuDeckInfo.textContent = `Deck: ${playerDeckTemplate.length} cartas (${totalLevel}/${MAX_DECK_LEVEL} nível)`;
-    menuLevelInfo.textContent = `Nível máximo: ${highestUnlockedLevel}/${TOTAL_LEVELS}`;
-    deckCount.textContent = `Nível do Deck: ${totalLevel}/${MAX_DECK_LEVEL}`;
+    menuDeckInfo.textContent = t('deckInfo', playerDeckTemplate.length, totalLevel, MAX_DECK_LEVEL);
+    menuLevelInfo.textContent = t('maxLevelInfo', highestUnlockedLevel, TOTAL_LEVELS);
+    deckCount.textContent = t('deckLevelStatus', totalLevel, MAX_DECK_LEVEL);
     deckCount.classList.toggle('deck-status-full', totalLevel >= MAX_DECK_LEVEL);
     const deckIds = new Set(playerDeckTemplate);
     const allIds = Object.keys(CARD_LIBRARY);
@@ -114,17 +127,16 @@ function expandAnyCard(cardData) {
         cardModalImage.appendChild(freezeIcon);
     }
     
-    cardModalName.textContent = cardData.name || 'Carta';
+    cardModalName.textContent = cardData.name || t('cardFallbackName');
     cardModalName.style.color = cardData.owner === 1 ? 'var(--p1)' : 'var(--p2)';
-    
+
     const powerSection = document.getElementById('cardModalPower');
     let shadowBtn = document.getElementById('cardModalShadowBtn');
     if (cardData.power) {
         powerSection.style.display = 'block';
-        const powerName = cardData.power.replace(/_/g, ' ');
-        cardModalPowerName.textContent = powerName.charAt(0).toUpperCase() + powerName.slice(1);
+        cardModalPowerName.textContent = getPowerName(cardData.power);
         cardModalPowerName.style.color = '#6bff6b';
-        cardModalPowerDesc.textContent = POWER_DESCRIPTIONS[cardData.power] || 'Poder especial desta carta.';
+        cardModalPowerDesc.textContent = getPowerDescription(cardData.power);
 
         if (cardData.power === 'dez_sombras') {
             if (!shadowBtn) {
@@ -137,7 +149,7 @@ function expandAnyCard(cardData) {
                 shadowBtn.onclick = (e) => { e.stopPropagation(); openShadowBrowseModal(); };
                 powerSection.appendChild(shadowBtn);
             }
-            shadowBtn.textContent = '🌑 Ver as Dez Sombras';
+            shadowBtn.textContent = t('viewTenShadowsBtn');
             shadowBtn.style.display = 'block';
         } else if (shadowBtn) {
             shadowBtn.style.display = 'none';
@@ -170,13 +182,12 @@ function closeCardModal() {
 
 function buildShadowCardPreview(id) {
     const s = SHADOW_CARDS[id];
-    return createCard(s.img, s.t, s.r, s.b, s.l, 1, null, s.name, s.cardLevel);
+    return createCard(s.img, s.t, s.r, s.b, s.l, 1, null, getShadowDisplayName(id), s.cardLevel);
 }
 
 function renderShadowGrid(onChoose) {
     shadowGrid.innerHTML = '';
     Object.keys(SHADOW_CARDS).forEach(id => {
-        const s = SHADOW_CARDS[id];
         const opt = document.createElement('div');
         opt.className = 'shadow-option' + (id === 'mahoraga' ? ' mahoraga' : '');
         opt.dataset.choosable = onChoose ? 'true' : 'false';
@@ -185,39 +196,51 @@ function renderShadowGrid(onChoose) {
 
         const nameEl = document.createElement('div');
         nameEl.className = 'shadow-name';
-        nameEl.textContent = s.name;
+        nameEl.textContent = getShadowDisplayName(id);
         opt.appendChild(nameEl);
 
         if (id === 'mahoraga') {
             const warn = document.createElement('div');
             warn.className = 'shadow-warn';
-            warn.textContent = '⚠ Destrói quem a invocou';
+            warn.textContent = t('shadowWarnMahoraga');
             opt.appendChild(warn);
         }
 
         if (onChoose) {
+            // Um clique único escolhe a sombra, mas espera um instante para
+            // que um clique duplo (ver detalhes, tratado pelo próprio card)
+            // possa cancelar a escolha em vez de somar dois cliques.
+            let clickTimer = null;
             opt.addEventListener('click', () => {
-                shadowModal.classList.remove('active');
-                onChoose(id);
+                if (clickTimer) return;
+                clickTimer = setTimeout(() => {
+                    clickTimer = null;
+                    shadowModal.classList.remove('active');
+                    onChoose(id);
+                }, 280);
             });
+            opt.addEventListener('dblclick', () => {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+            }, true);
         }
         shadowGrid.appendChild(opt);
     });
 }
 
 function openShadowSelectionModal(onChoose) {
-    shadowModalTitle.textContent = '🌑 Técnica das Dez Sombras';
+    shadowModalTitle.textContent = t('shadowModalDefaultTitle');
     renderShadowGrid(onChoose);
-    shadowModalHint.textContent = 'Escolha uma sombra para invocar';
+    shadowModalHint.textContent = t('shadowSelectHint');
     shadowModalClose.style.display = 'none';
     modalCancelCallback = null;
     shadowModal.classList.add('active');
 }
 
 function openShadowBrowseModal() {
-    shadowModalTitle.textContent = '🌑 Técnica das Dez Sombras';
+    shadowModalTitle.textContent = t('shadowModalDefaultTitle');
     renderShadowGrid(null);
-    shadowModalHint.textContent = 'As 10 sombras que pode invocar';
+    shadowModalHint.textContent = t('shadowBrowseHint');
     shadowModalClose.style.display = 'flex';
     modalCancelCallback = null;
     shadowModal.classList.add('active');
@@ -273,11 +296,11 @@ function openTrocaDeCorposModal(destroyedLog, onChoose) {
         label: d.name
     }));
     openGenericChoiceModal({
-        title: '🔁 Troca de Corpos',
-        hint: 'Sacrifique Kenjaku para trazer uma carta destruída de volta, ou cancele',
+        title: t('bodySwapTitle'),
+        hint: t('bodySwapHint'),
         items,
         onChoose,
-        cancelLabel: '❌ Não sacrificar Kenjaku'
+        cancelLabel: t('bodySwapCancel')
     });
 }
 
@@ -355,7 +378,7 @@ function makeManageCard(cardId, actionLabel, actionClass, action, locked) {
     if (locked || !isUnlocked) {
         const lockTag = document.createElement('div');
         lockTag.className = 'lock-tag';
-        lockTag.textContent = `Nível ${CARD_LIBRARY[cardId].unlockLevel}`;
+        lockTag.textContent = t('lockTag', CARD_LIBRARY[cardId].unlockLevel);
         wrap.appendChild(lockTag);
     } else {
         const btn = document.createElement('button');
@@ -389,7 +412,7 @@ function renderDeckScreen() {
     } else {
         activeDeckEmpty.style.display = 'none';
         inDeck.forEach(cardId => {
-            activeDeckList.appendChild(makeManageCard(cardId, 'Remover', 'remove', () => removeFromDeck(cardId), false));
+            activeDeckList.appendChild(makeManageCard(cardId, t('removeBtn'), 'remove', () => removeFromDeck(cardId), false));
         });
     }
  
@@ -398,7 +421,7 @@ function renderDeckScreen() {
     } else {
         collectionEmpty.style.display = 'none';
         available.forEach(cardId => {
-            collectionList.appendChild(makeManageCard(cardId, 'Adicionar', 'add', () => addToDeck(cardId), false));
+            collectionList.appendChild(makeManageCard(cardId, t('addBtn'), 'add', () => addToDeck(cardId), false));
         });
     }
  
@@ -435,24 +458,24 @@ function renderTutorialVisuals() {
         boardSlot.appendChild(cell);
     }
 }
-function addToDeck(cardId) { 
+function addToDeck(cardId) {
     const totalLevel = getDeckTotalLevel() + (CARD_LIBRARY[cardId].cardLevel || 1);
-    if (totalLevel > MAX_DECK_LEVEL) { 
-        showToast(`Nível do deck excederia ${MAX_DECK_LEVEL}! (Atual: ${getDeckTotalLevel()})`, 'gold'); 
-        return; 
-    } 
+    if (totalLevel > MAX_DECK_LEVEL) {
+        showToast(t('toastDeckLevelExceeded', MAX_DECK_LEVEL, getDeckTotalLevel()), 'gold');
+        return;
+    }
     if (!playerDeckTemplate.includes(cardId)) {
-        playerDeckTemplate.push(cardId); 
-        savePlayerProgress(); 
+        playerDeckTemplate.push(cardId);
+        savePlayerProgress();
         renderDeckScreen();
-        showToast(`✅ ${getCardDisplayName(cardId)} adicionada ao deck!`, 'p1');
+        showToast(t('toastCardAdded', getCardDisplayName(cardId)), 'p1');
     }
 }
-function removeFromDeck(cardId) { 
-    playerDeckTemplate = playerDeckTemplate.filter(id => id !== cardId); 
-    savePlayerProgress(); 
+function removeFromDeck(cardId) {
+    playerDeckTemplate = playerDeckTemplate.filter(id => id !== cardId);
+    savePlayerProgress();
     renderDeckScreen();
-    showToast(`🗑️ ${getCardDisplayName(cardId)} removida do deck.`, 'p2');
+    showToast(t('toastCardRemoved', getCardDisplayName(cardId)), 'p2');
 }
  
 function renderLevelScreen() {
@@ -463,16 +486,16 @@ function renderLevelScreen() {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'level-btn' + (locked ? ' locked' : '') + (completed ? ' completed' : '');
-        btn.innerHTML = `<span class="level-num">${locked ? '🔒' : level}</span><span class="level-tag">${completed ? 'Concluído' : (locked ? 'Bloqueado' : 'Nível ' + level)}</span>`;
+        btn.innerHTML = `<span class="level-num">${locked ? '🔒' : level}</span><span class="level-tag">${completed ? t('levelCompleted') : (locked ? t('levelLocked') : t('levelTag', level))}</span>`;
         if (!locked) btn.onclick = () => selectLevel(level);
         levelGrid.appendChild(btn);
     }
 }
 function showLevelScreen() {
-    if (playerDeckTemplate.length === 0) { showToast('Adicione ao menos 1 carta ao deck.', 'gold'); showDeckScreen(); return; }
+    if (playerDeckTemplate.length === 0) { showToast(t('toastAddOneCard'), 'gold'); showDeckScreen(); return; }
     const characterCards = playerDeckTemplate.filter(id => !CARD_LIBRARY[id].isDomain);
     if (characterCards.length === 0) {
-        showToast('Adicione ao menos 1 carta de personagem ao deck (domínios não contam).', 'gold');
+        showToast(t('toastAddCharacterCard'), 'gold');
         showDeckScreen();
         return;
     }

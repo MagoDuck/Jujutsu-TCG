@@ -897,7 +897,18 @@ h2::after{
 .screen { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .hidden { display: none !important; }
 #mainMenu { max-width: 980px; min-height: calc(100vh - 80px); justify-content: center; gap: 18px; }
-.menu-panel, .deck-panel, .levels-panel, .tutorial-panel { width: min(940px, 96vw); background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)); border: 1px solid var(--border-strong); border-radius: 14px; padding: 22px; box-shadow: 0 18px 50px rgba(0,0,0,0.38); }
+.menu-panel, .deck-panel, .levels-panel, .tutorial-panel, .settings-panel { width: min(940px, 96vw); background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)); border: 1px solid var(--border-strong); border-radius: 14px; padding: 22px; box-shadow: 0 18px 50px rgba(0,0,0,0.38); }
+.settings-panel { display: flex; flex-direction: column; gap: 18px; box-sizing: border-box; }
+.settings-section { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px 18px; }
+.settings-section-title { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+.settings-lang-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.lang-btn { flex: 1; min-width: 140px; }
+.lang-btn.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.settings-toggle-row { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-primary); font-weight: 600; margin-bottom: 14px; }
+.settings-toggle-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+.settings-volume-row { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-weight: 600; font-size: 13px; }
+.settings-volume-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+.settings-hint { margin-top: 12px; font-size: 12px; color: var(--text-faint); line-height: 1.5; }
 .tutorial-panel { display: flex; flex-direction: column; gap: 14px; box-sizing: border-box; }
 .tutorial-step { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px 18px; }
 .tutorial-step-title { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
@@ -1130,7 +1141,7 @@ h2::after{
  
 @media (max-width: 760px) {
     .menu-actions { grid-template-columns: 1fr; }
-    .menu-panel, .deck-panel, .levels-panel, .tutorial-panel { padding: 16px; }
+    .menu-panel, .deck-panel, .levels-panel, .tutorial-panel, .settings-panel { padding: 16px; }
     .card-grid { grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 10px; }
     .level-grid { grid-template-columns: repeat(3, 1fr); }
     .deck-column-title { font-size: 12px; }

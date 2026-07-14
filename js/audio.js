@@ -72,7 +72,6 @@ function initAudio() {
     bgMusic.volume = musicVolume;
     bgMusic.muted = musicMuted;
 
-    // Sem arquivo em audio/musica.mp3 ainda, a reprodução falha silenciosamente.
     bgMusic.addEventListener('error', () => {}, true);
 
     const unlock = () => unlockMusicOnFirstInteraction();

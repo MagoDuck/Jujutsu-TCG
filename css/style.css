@@ -891,6 +891,8 @@ h2::after{
 .shadow-option .shadow-name { font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.5px; color: var(--text-primary); text-align: center; line-height: 1.2; }
 .shadow-option.mahoraga { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
 .shadow-option .shadow-warn { font-size: 10px; color: var(--p2); letter-spacing: 0.3px; text-align: center; line-height: 1.3; }
+.shadow-option.shadow-cancel { justify-content: center; min-height: 96px; font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: 0.5px; color: var(--text-muted); }
+.shadow-option.shadow-cancel:hover { border-color: var(--p2); color: var(--p2); }
  
 .screen { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .hidden { display: none !important; }

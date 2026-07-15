@@ -315,13 +315,23 @@ function cardPowerScore(cardId) {
     return d.t + d.r + d.b + d.l + bonus;
 }
  
+const AI_DOMAIN_ORDER = ['d4', 'd3', 'd1', 'd2']; // do Refino mais fraco para o mais forte
+
+function getAiDomainForLevel(level) {
+    const idx = Math.min(AI_DOMAIN_ORDER.length - 1, Math.floor(((level - 1) / (TOTAL_LEVELS - 1)) * AI_DOMAIN_ORDER.length));
+    return AI_DOMAIN_ORDER[idx];
+}
+
 function getAiDeckForLevel(level, owner) {
     const ids = Object.keys(CARD_LIBRARY).filter(id => !CARD_LIBRARY[id].isDomain);
     const sorted = ids.slice().sort((a, b) => cardPowerScore(a) - cardPowerScore(b));
     const windowSize = 10;
     const maxStart = sorted.length - windowSize;
     const startIndex = Math.round(((level - 1) / (TOTAL_LEVELS - 1)) * maxStart);
-    return sorted.slice(startIndex, startIndex + windowSize).map(id => createOwnedCard(id, owner));
+    const characterCards = sorted.slice(startIndex, startIndex + windowSize).map(id => createOwnedCard(id, owner));
+
+    const domainCard = createOwnedCard(getAiDomainForLevel(level), owner);
+    return domainCard ? [...characterCards, domainCard] : characterCards;
 }
  
 function getAiRandomChance(level) {
@@ -331,42 +341,55 @@ function getAiRandomChance(level) {
 function aiMove() {
     if (gameEnded) return;
     if (opponentDeck.length === 0) return;
- 
+
     const emptyCells = [];
     boardState.forEach((v, i) => {
         if (v === null && i !== CENTER_CELL) emptyCells.push(i);
     });
 
-    if (emptyCells.length === 0) return;
- 
+    const domainCandidates = opponentDeck
+        .map((c, idx) => ({ c, idx }))
+        .filter(({ c }) => c.isDomain && canPlaceDomain(c).ok);
+
+    if (emptyCells.length === 0 && domainCandidates.length === 0) return;
+
     if (Math.random() < getAiRandomChance(currentLevel)) {
-        const randomPos = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        const randomCardIndex = Math.floor(Math.random() * opponentDeck.length);
-        selectedCard = { player: 2, index: randomCardIndex };
-        placeCard(randomPos);
-        return;
+        const playableIndexes = opponentDeck
+            .map((c, idx) => idx)
+            .filter(idx => canCardBePlaced(opponentDeck[idx]));
+
+        if (playableIndexes.length > 0) {
+            const randomIndex = playableIndexes[Math.floor(Math.random() * playableIndexes.length)];
+            const randomCard = opponentDeck[randomIndex];
+            const randomPos = randomCard.isDomain
+                ? CENTER_CELL
+                : emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            selectedCard = { player: 2, index: randomIndex };
+            placeCard(randomPos);
+            return;
+        }
     }
- 
+
     const corners = [0, 4, 20, 24];
- 
-    let bestPos = emptyCells[0];
-    let bestCardIndex = 0;
+
+    let bestPos = null;
+    let bestCardIndex = null;
     let bestScore = -Infinity;
- 
-    const normalOpponentCards = opponentDeck.map((c, idx) => ({ c, idx }));
+
+    const normalOpponentCards = opponentDeck.map((c, idx) => ({ c, idx })).filter(({ c }) => !c.isDomain);
     const normalPlayerCards = playerDeck;
- 
+
     normalOpponentCards.forEach(({ c: card, idx: cardIndex }) => {
         emptyCells.forEach(pos => {
             const simBoard = cloneBoardState(boardState);
             const placedCard = { ...card, owner: 2, invincible: false };
             simBoard[pos] = placedCard;
- 
+
             const myCaptures = simulateCapture(simBoard, pos, placedCard);
- 
+
             const emptyAfter = [];
             simBoard.forEach((v, i) => { if (v === null && i !== CENTER_CELL) emptyAfter.push(i); });
- 
+
             let opponentBestCaptures = 0;
             normalPlayerCards.forEach(pc => {
                 emptyAfter.forEach(epos => {
@@ -377,13 +400,13 @@ function aiMove() {
                     if (cap > opponentBestCaptures) opponentBestCaptures = cap;
                 });
             });
- 
+
             let score = myCaptures * 3 - opponentBestCaptures * 2;
- 
+
             if (card.power) score += 2;
- 
+
             if (corners.includes(pos)) score += 0.5;
- 
+
             if (score > bestScore) {
                 bestScore = score;
                 bestPos = pos;
@@ -391,7 +414,21 @@ function aiMove() {
             }
         });
     });
- 
+
+    const cardsOnBoard = boardState.filter(c => c !== null).length;
+    domainCandidates.forEach(({ c: card, idx: cardIndex }) => {
+        let score = 3 + cardsOnBoard * 0.3;
+        if (canPlaceDomain(card).overriding) score += 2;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestPos = CENTER_CELL;
+            bestCardIndex = cardIndex;
+        }
+    });
+
+    if (bestCardIndex === null) return;
+
     selectedCard = { player: 2, index: bestCardIndex };
     placeCard(bestPos);
 }

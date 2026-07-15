@@ -70,6 +70,8 @@ function selectCard(player, index) {
     if (gameEnded) return;
     if (pendingSelection) return;
 
+    playCardClickSound();
+
     const allCards = document.querySelectorAll('.card');
     allCards.forEach(card => card.classList.remove('selected'));
  

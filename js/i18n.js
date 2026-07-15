@@ -126,7 +126,7 @@ const TRANSLATIONS = {
         settingsMusicLabel: 'Música de fundo',
         settingsVolume: 'Volume',
         settingsMuted: 'Mudo',
-        settingsMusicHint: 'Coloque um arquivo em audio/JK4.mp3 para tocar sua própria música.',
+        settingsMusicHint: '',
 
         powerNames: {
             jackpot: 'Jackpot',
@@ -311,7 +311,7 @@ const TRANSLATIONS = {
         settingsMusicLabel: 'Background music',
         settingsVolume: 'Volume',
         settingsMuted: 'Muted',
-        settingsMusicHint: 'Drop a file at audio/JK4.mp3 to play your own music.',
+        settingsMusicHint: 'Tracks at audio/JK1.mp3, JK2.mp3 and JK4.mp3 play in sequence and repeat.',
 
         powerNames: {
             jackpot: 'Jackpot',

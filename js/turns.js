@@ -99,6 +99,7 @@ function placeCard(pos) {
     newCardEl.classList.add('just-placed');
     cell.appendChild(newCardEl);
     setTimeout(() => newCardEl.classList.remove('just-placed'), 350);
+    playCardPlaceSound();
 
     const allCards = document.querySelectorAll('.card');
     allCards.forEach(c => c.classList.remove('selected'));

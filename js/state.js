@@ -65,5 +65,5 @@ let currentLevel = 1;
 let deferredInstallPrompt = null;
  
 const TOTAL_LEVELS = 12;
-const MAX_DECK_LEVEL = 25;
+const MAX_DECK_LEVEL = 32;
 const STORAGE_KEY = "tcg-arena-save-v2";

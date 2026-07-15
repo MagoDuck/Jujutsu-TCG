@@ -103,6 +103,7 @@ const TRANSLATIONS = {
 
         toastBoogieSelect: '🔄 Escolha uma carta para trocar (ou toque em Todo novamente para cancelar)',
         toastCordaNegraSelect: '⛓️ Escolha uma carta para anular o poder (ou toque em Miguel novamente para cancelar)',
+        toastRetornoAMaoSelect: '👋 Escolha uma carta para devolver à mão do dono (ou toque em Ui Ui novamente para cancelar)',
 
         levelUnlocked: (level) => `🔓 Nível ${level} desbloqueado!`,
         newCardUnlocked: (name) => `Nova carta desbloqueada: ${name}!`,
@@ -145,12 +146,15 @@ const TRANSLATIONS = {
             determinacao: 'Determinação',
             adaptacao: 'Adaptação',
             corda_negra: 'Corda Negra',
-            besta_mitica_ambar: 'Besta Mítica Âmbar'
+            besta_mitica_ambar: 'Besta Mítica Âmbar',
+            super_comediante: 'Super Comediante',
+            imunidade_de_dominio: 'Assassino de Feiticeiros',
+            retorno_a_mao: 'Devolver à Mão'
         },
         powerDescriptions: {
             jackpot: 'Enquanto estiver na mão, todos os atributos desta carta permanecem ocultos (?). Ao ser colocada em campo, seus atributos são sorteados e ficam fixos até o fim da partida. A chance de vir valores altos é de 90% se for a primeira carta jogada no tabuleiro, caindo 10% a cada carta já em campo. (Esse poder ocorre antes da comparação de pontos)',
             boogie_woogie: 'Ao entrar em campo, você pode escolher qualquer carta em jogo, aliada ou inimiga. Se escolher uma, Todo troca instantaneamente de posição com ela. (Esse poder ocorre antes da comparação de pontos)',
-            copiar: 'Ao entrar em campo, copia aleatoriamente a habilidade de uma carta que já esteja em jogo. A habilidade copiada permanece ativa enquanto Yuta permanecer em campo. (Esse poder ocorre antes da comparação de pontos)',
+            copiar: 'Ao entrar em campo, copia aleatoriamente a habilidade de uma carta de feiticeiro que já esteja em jogo (poderes de Expansões de Domínio não podem ser copiados). A habilidade copiada permanece ativa enquanto Yuta permanecer em campo. (Esse poder ocorre antes da comparação de pontos)',
             dez_sombras: 'Ao colocar esta carta em campo, escolha uma das 10 cartas da categoria Sombras para ser invocada imediatamente em um espaço livre. Se a carta escolhida for Mahoraga, a carta invocadora é destruída após a invocação. (Esse poder ocorre antes da comparação de pontos)',
             desmantelar: 'Ao entrar em campo, todas as cartas adjacentes a Sukuna, aliadas ou inimigas, têm todos os seus atributos reduzidos pela metade, permanentemente. (Esse poder ocorre depois da comparação de pontos, funciona apenas uma vez, quando a carta é jogada, e não dura por rodadas)',
             infinito: 'Esta carta não pode ser capturada, convertida ou virada pelo adversário por qualquer efeito ou comparação de atributos.',
@@ -164,7 +168,10 @@ const TRANSLATIONS = {
             determinacao: 'Para cada carta inimiga virada (capturada) nesta jogada, esta carta recebe +2 em todos os atributos. (Esse poder ocorre depois da comparação de pontos)',
             adaptacao: 'Assim que entra em campo, esta carta destrói quem a invocou. A cada rodada, esta carta ganha +2 em todos os atributos.',
             corda_negra: 'Ao entrar em campo, escolha uma carta em jogo, aliada ou inimiga. A habilidade dessa carta é anulada até esta carta sair de campo. (Esse poder ocorre depois da comparação de pontos, e esse poder não pode ser copiado)',
-            besta_mitica_ambar: 'Esta carta dura 3 rodadas em campo antes de se autodestruir. Quando isso acontece, todas as cartas adjacentes inimigas perdem 5 pontos em todos os atributos.'
+            besta_mitica_ambar: 'Esta carta dura 3 rodadas em campo antes de se autodestruir. Quando isso acontece, todas as cartas adjacentes inimigas perdem 5 pontos em todos os atributos.',
+            super_comediante: 'Enquanto estiver na mão, todos os atributos desta carta permanecem ocultos (?). Ao ser colocada em campo, o jogo compara quem tem mais cartas no tabuleiro: se quem jogou Takaba estiver vencendo, os atributos saem muito baixos; se estiver perdendo, saem absurdamente altos; se estiver empatado, todos os quatro atributos saem iguais e medianos. (Esse poder ocorre antes da comparação de pontos)',
+            imunidade_de_dominio: 'Por não possuir energia amaldiçoada, Toji é imune aos efeitos de qualquer Expansão de Domínio em campo, exceto o Santuário Malevolente. Vazio Infinito não bloqueia suas capturas, e efeitos de entrada de domínios (como Auto-Personificação da Perfeição e Mar Brilhante) não o afetam.',
+            retorno_a_mao: 'Ao entrar em campo, escolha uma carta em jogo, aliada ou inimiga (exceto a própria Ui Ui). Essa carta retorna para a mão de quem é dono dela. (Esse poder ocorre antes da comparação de pontos)'
         },
         shadowNames: {
             divine_dogs: 'Cães Divinos',
@@ -288,6 +295,7 @@ const TRANSLATIONS = {
 
         toastBoogieSelect: '🔄 Choose a card to swap with (or tap Todo again to cancel)',
         toastCordaNegraSelect: '⛓️ Choose a card to nullify the power of (or tap Miguel again to cancel)',
+        toastRetornoAMaoSelect: '👋 Choose a card to return to its owner\'s hand (or tap Ui Ui again to cancel)',
 
         levelUnlocked: (level) => `🔓 Level ${level} unlocked!`,
         newCardUnlocked: (name) => `New card unlocked: ${name}!`,
@@ -330,12 +338,15 @@ const TRANSLATIONS = {
             determinacao: 'Determination',
             adaptacao: 'Adaptation',
             corda_negra: 'Black Cord',
-            besta_mitica_ambar: 'Mythical Amber Beast'
+            besta_mitica_ambar: 'Mythical Amber Beast',
+            super_comediante: 'Super Comedian',
+            imunidade_de_dominio: 'Sorcerer Killer',
+            retorno_a_mao: 'Return to Hand'
         },
         powerDescriptions: {
             jackpot: 'While in hand, all of this card\'s attributes stay hidden (?). Once played, its attributes are rolled and stay fixed for the rest of the match. The odds of rolling high values are 90% if it\'s the first card played on the board, dropping 10% for every card already on the board. (This power happens before the point comparison)',
             boogie_woogie: 'Upon entering the board, you may choose any card in play, ally or enemy. If you choose one, Todo instantly swaps places with it. (This power happens before the point comparison)',
-            copiar: 'Upon entering the board, randomly copies the power of a card already in play. The copied power stays active as long as Yuta remains on the board. (This power happens before the point comparison)',
+            copiar: 'Upon entering the board, randomly copies the power of a sorcerer card already in play (Domain Expansion powers cannot be copied). The copied power stays active as long as Yuta remains on the board. (This power happens before the point comparison)',
             dez_sombras: 'When this card is played, choose one of the 10 Shadow cards to be summoned immediately in a free space. If the chosen card is Mahoraga, the summoning card is destroyed right after the summon. (This power happens before the point comparison)',
             desmantelar: 'Upon entering the board, every card adjacent to Sukuna, ally or enemy, has all of its attributes permanently cut in half. (This power happens after the point comparison, triggers only once when the card is played, and does not last over rounds)',
             infinito: 'This card cannot be captured, converted, or flipped by the opponent through any effect or attribute comparison.',
@@ -349,7 +360,10 @@ const TRANSLATIONS = {
             determinacao: 'For every enemy card flipped (captured) on this move, this card gains +2 on every attribute. (This power happens after the point comparison)',
             adaptacao: 'As soon as it enters the board, this card destroys whoever summoned it. Every round, this card gains +2 on every attribute.',
             corda_negra: 'Upon entering the board, choose a card in play, ally or enemy. That card\'s power is nullified until this card leaves the board. (This power happens after the point comparison, and this power cannot be copied)',
-            besta_mitica_ambar: 'This card lasts 3 rounds on the board before self-destructing. When that happens, every adjacent enemy card loses 5 points on every attribute.'
+            besta_mitica_ambar: 'This card lasts 3 rounds on the board before self-destructing. When that happens, every adjacent enemy card loses 5 points on every attribute.',
+            super_comediante: 'While in hand, all of this card\'s attributes stay hidden (?). Once played, the game compares who has more cards on the board: if whoever played Takaba is winning, the attributes come out very low; if losing, they come out absurdly high; if tied, all four attributes come out equal and average. (This power happens before the point comparison)',
+            imunidade_de_dominio: 'Having no cursed energy of his own, Toji is immune to the effects of any Domain Expansion on the board, except Malevolent Shrine. Infinite Void doesn\'t block his captures, and on-entry domain effects (like Self-Embodiment of Perfection and Shining Sea of Rising Branches) don\'t affect him.',
+            retorno_a_mao: 'Upon entering the board, choose a card in play, ally or enemy (except Ui Ui itself). That card returns to its owner\'s hand. (This power happens before the point comparison)'
         },
         shadowNames: {
             divine_dogs: 'Divine Dogs',

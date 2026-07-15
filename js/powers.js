@@ -85,9 +85,20 @@ function executePower(pos, card, powerType, onDone) {
             applyJackpotPower(pos, card);
             onDone();
             break;
+        case 'super_comediante':
+            applySuperComedianPower(pos, card);
+            onDone();
+            break;
         case 'infinito':
             applyInfinitoPower(pos, card);
             onDone();
+            break;
+        case 'imunidade_de_dominio':
+            applyImunidadeDeDominioPower(pos, card);
+            onDone();
+            break;
+        case 'retorno_a_mao':
+            triggerRetornoAMao(pos, card, onDone);
             break;
         case 'erupcao_vulcanica':
             applyErupcaoVulcanicaPower(pos, card);
@@ -175,6 +186,39 @@ function applyJackpotPower(pos, card) {
     updateCardDisplay(pos, card);
 }
 
+function applySuperComedianPower(pos, card) {
+    spawnPowerRing(pos, 'super_comediante');
+    card.hiddenStats = false;
+
+    let mine = 0, theirs = 0;
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (i === pos) continue;
+        const c = boardState[i];
+        if (!c) continue;
+        if (c.owner === card.owner) mine++;
+        else theirs++;
+    }
+
+    const attrs = ['t', 'r', 'b', 'l'];
+    if (mine > theirs) {
+        // Vencendo: a piada vira contra ele, atributos saem muito baixos
+        attrs.forEach(attr => { card[attr] = Math.floor(Math.random() * 4); }); // 0-3
+    } else if (mine < theirs) {
+        // Perdendo: a plateia ri a seu favor, atributos saem absurdamente altos
+        attrs.forEach(attr => { card[attr] = 26 + Math.floor(Math.random() * 7); }); // 26-32
+    } else {
+        // Empatado: piada sem graça, tudo igual e mediano
+        const median = 9 + Math.floor(Math.random() * 3); // 9-11
+        attrs.forEach(attr => { card[attr] = median; });
+    }
+
+    card.original_t = card.base_t = card.t;
+    card.original_r = card.base_r = card.r;
+    card.original_b = card.base_b = card.b;
+    card.original_l = card.base_l = card.l;
+    updateCardDisplay(pos, card);
+}
+
 function triggerBoogieWoogie(pos, card, onDone) {
     spawnPowerRing(pos, 'boogie_woogie');
     const targets = [];
@@ -226,7 +270,7 @@ function applyCopiarPower(pos, card, onDone) {
     spawnPowerRing(pos, 'copiar');
     const candidates = [];
     for (let i = 0; i < TOTAL_CELLS; i++) {
-        if (i !== pos && boardState[i] && boardState[i].power && !boardState[i].disabledPower
+        if (i !== pos && boardState[i] && !boardState[i].isDomain && boardState[i].power && !boardState[i].disabledPower
             && boardState[i].power !== 'copiar' && boardState[i].power !== 'corda_negra') {
             candidates.push(boardState[i].power);
         }
@@ -284,6 +328,67 @@ function applyInfinitoPower(pos, card) {
     card.invincible = true;
 }
 
+function applyImunidadeDeDominioPower(pos, card) {
+    spawnPowerRing(pos, 'imunidade_de_dominio');
+    card.domainImmune = true;
+}
+
+function triggerRetornoAMao(pos, card, onDone) {
+    const candidates = [];
+    for (let i = 0; i < TOTAL_CELLS; i++) {
+        if (i !== pos && boardState[i] !== null) candidates.push(i);
+    }
+
+    if (candidates.length === 0) {
+        onDone();
+        return;
+    }
+
+    const finish = (targetPos) => {
+        if (targetPos !== null && targetPos !== undefined && boardState[targetPos]) {
+            returnCardToHand(targetPos);
+        }
+        onDone();
+    };
+
+    spawnPowerRing(pos, 'retorno_a_mao');
+    if (card.owner === 1) {
+        beginRetornoAMaoSelection(pos, candidates, finish);
+    } else {
+        finish(candidates[Math.floor(Math.random() * candidates.length)]);
+    }
+}
+
+function beginRetornoAMaoSelection(pos, targets, resolve) {
+    pendingSelection = { type: 'retornoAMao', pos, targets, resolve };
+    clearValidTargets();
+    targets.forEach(i => board.children[i].classList.add('valid-target'));
+    const hostCard = board.children[pos].querySelector('.card');
+    if (hostCard) hostCard.classList.add('selected');
+    showToast(t('toastRetornoAMaoSelect'), 'p1');
+}
+
+function returnCardToHand(pos) {
+    const target = boardState[pos];
+    if (!target) return;
+
+    releaseCordaNegraTarget(target);
+
+    boardState[pos] = null;
+    const cell = board.children[pos];
+    if (cell) cell.innerHTML = '';
+
+    const deck = target.owner === 1 ? playerDeck : opponentDeck;
+    let restored = (target.cardId && CARD_LIBRARY[target.cardId])
+        ? createOwnedCard(target.cardId, target.owner)
+        : null;
+    if (!restored) {
+        restored = createCard(target.img, target.original_t, target.original_r, target.original_b, target.original_l, target.owner, target.power, target.name, target.cardLevel, target.isDomain, target.refino);
+        restored.cardId = target.cardId;
+    }
+    deck.push(restored);
+}
+
 function applyErupcaoVulcanicaPower(pos, card) {
     spawnPowerRing(pos, 'erupcao_vulcanica');
     const attrs = ['t', 'r', 'b', 'l'];
@@ -332,7 +437,7 @@ function applyAutoPersonificacaoPower(pos, card) {
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (i === pos) continue;
         const target = boardState[i];
-        if (target && !target.isDomain && !target.frozen) {
+        if (target && !target.isDomain && !target.frozen && !target.domainImmune) {
             swapTopBottomLeftRight(target);
             updateCardDisplay(i, target);
             spawnFloatNumber(i, '🔄', true);
@@ -346,7 +451,7 @@ function applyMarBrilhantePower(pos, card) {
     for (let i = 0; i < TOTAL_CELLS; i++) {
         if (i === pos) continue;
         const target = boardState[i];
-        if (target && !target.isDomain && !target.frozen) {
+        if (target && !target.isDomain && !target.frozen && !target.domainImmune) {
             const randomAttr = attrs[Math.floor(Math.random() * attrs.length)];
             const baseKey = 'base_' + randomAttr;
             target[baseKey] = (target[baseKey] !== undefined ? target[baseKey] : target[randomAttr]) + 5;

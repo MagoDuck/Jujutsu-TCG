@@ -49,6 +49,13 @@ function isCaptureBlockedByDomain() {
     const domain = boardState[CENTER_CELL];
     return !!(domain && domain.isDomain && domain.power === 'vazio_infinito' && !domain.disabledPower);
 }
+
+function isCaptureBlockedForPair(attacker, defender) {
+    if (!isCaptureBlockedByDomain()) return false;
+    if (attacker && attacker.domainImmune) return false;
+    if (defender && defender.domainImmune) return false;
+    return true;
+}
  
 function renderHands() {
     playerArea.innerHTML = "";

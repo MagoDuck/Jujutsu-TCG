@@ -114,8 +114,10 @@ function getSfxContext() {
     return sfxContext;
 }
 
+const SFX_VOLUME = 0.7;
+
 function getSfxVolume() {
-    return musicMuted ? 0 : musicVolume;
+    return SFX_VOLUME;
 }
 
 function playTone(ctx, { freq, freqEnd = null, start = 0, duration = 0.12, type = 'sine', peak = 0.25 }) {

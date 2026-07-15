@@ -48,7 +48,10 @@ const POWER_SYMBOLS = {
     'determinacao': '💪',
     'adaptacao': '🐺',
     'corda_negra': '⛓️',
-    'besta_mitica_ambar': '🐴'
+    'besta_mitica_ambar': '🐴',
+    'super_comediante': '🤡',
+    'imunidade_de_dominio': '🚫',
+    'retorno_a_mao': '👋'
 };
 
 const CARD_NAMES = {
@@ -90,11 +93,11 @@ const CARD_LIBRARY = {
     c4:  { img: 'Img/Mahito.jpg',  t: 16,  r: 6, b: 8,  l: 10,  power: 'transfiguracao_de_alma',  unlockLevel: 1, cardLevel: 3 },
     c5:  { img: 'Img/Dagon.jpg',  t: 8, r: 10, b: 14,  l: 8, power: null, unlockLevel: 1, cardLevel: 3 },
     c6:  { img: 'Img/Jogo.jpg',  t: 8,  r: 6,  b: 12, l: 14,  power: 'erupcao_vulcanica', unlockLevel: 1, cardLevel: 3 },
-    c7:  { img: 'Img/Toji fushiguro.jpg',  t: 6, r: 25, b: 9, l: 10,  power: null,   unlockLevel: 1, cardLevel: 4 },
+    c7:  { img: 'Img/Toji fushiguro.jpg',  t: 6, r: 25, b: 9, l: 10,  power: 'imunidade_de_dominio',   unlockLevel: 1, cardLevel: 4 },
     c8:  { img: 'Img/Yuta.jpg', t: 15, r: 10,  b: 10,  l: 15,  power: 'copiar',   unlockLevel: 1, cardLevel: 4 },
     c9:  { img: 'Img/Choso.jpg', t: 14, r: 8,  b: 8,  l: 10,  power: null, unlockLevel: 1, cardLevel: 3 },
     c10: { img: 'Img/Aoi Todo.jpg', t: 10,  r: 8,  b: 16,  l: 6, power: 'boogie_woogie',   unlockLevel: 1, cardLevel: 3 },
-    c11: { img: 'Img/Takaba.jpg',  t: 20, r: 5,  b: 5,  l: 20,  power: null, unlockLevel: 2, cardLevel: 4 },
+    c11: { img: 'Img/Takaba.jpg',  t: '?', r: '?', b: '?',  l: '?',  power: 'super_comediante', unlockLevel: 2, cardLevel: 4 },
     c12: { img: 'Img/Hajime.jpg',  t: 20,  r: 10, b: 6,  l: 14,  power: 'besta_mitica_ambar', unlockLevel: 2, cardLevel: 4 },
     c13: { img: 'Img/Hanami.jpg',  t: 10,  r: 12,  b: 10, l: 8,  power: null, unlockLevel: 3, cardLevel: 3 },
     c14: { img: 'Img/Kenjaku.jpg',  t: 10, r: 20, b: 10,  l: 20,  power: 'troca_de_corpos', unlockLevel: 3, cardLevel: 5 },
@@ -153,7 +156,7 @@ const CARD_LIBRARY = {
     c66: { img: 'Img/Rika.jpg', t: 10, r: 10, b: 15, l: 15, power: null, unlockLevel: 8, cardLevel: 4 },
     c67: { img: 'Img/Kusakabe.jpg', t: 12, r: 8, b: 12, l: 8, power: null, unlockLevel: 5, cardLevel: 3 },
     c68: { img: 'Img/MaiZenin.jpg', t: 10, r: 6, b: 6, l: 8, power: null, unlockLevel: 3, cardLevel: 2 },
-    c69: { img: 'Img/UiUi.jpg', t: 4, r: 6, b: 4, l: 6, power: null, unlockLevel: 1, cardLevel: 1 },
+    c69: { img: 'Img/UiUi.jpg', t: 4, r: 6, b: 4, l: 6, power: 'retorno_a_mao', unlockLevel: 1, cardLevel: 1 },
     c70: { img: 'Img/Riko.jpg', t: 4, r: 4, b: 4, l: 8, power: null, unlockLevel: 1, cardLevel: 1 },
 
     d1: { img: 'Img/eds.jpg',     t: 0, r: 0, b: 0, l: 0, power: 'vazio_infinito',        isDomain: true, refino: 10, unlockLevel: 1, cardLevel: 5 },

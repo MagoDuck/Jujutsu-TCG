@@ -173,10 +173,6 @@ function determineNextPlayer(mover) {
 }
 
 function captureCards(pos, card) {
-    if (isCaptureBlockedByDomain()) {
-        return 0;
-    }
-
     const sides = {
         [pos - BOARD_COLS]: { side: "t", opposite: "b" },
         [pos + BOARD_COLS]: { side: "b", opposite: "t" },
@@ -190,7 +186,8 @@ function captureCards(pos, card) {
         const { side, opposite } = sides[n];
         const other = boardState[n];
         const isInvincible = other && other.invincible && !other.disabledPower;
-        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible) {
+        const blockedByDomain = isCaptureBlockedForPair(card, other);
+        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible && !blockedByDomain) {
             if (card[side] > other[opposite]) {
                 other.owner = card.owner;
                 updateCardDisplay(n, other);
@@ -283,8 +280,6 @@ function cloneBoardState(b) {
 }
  
 function simulateCapture(simBoard, pos, card) {
-    if (isCaptureBlockedByDomain()) return 0;
-
     const neighbors = [
         { pos: pos - BOARD_COLS, side: "t", opposite: "b" },
         { pos: pos + BOARD_COLS, side: "b", opposite: "t" },
@@ -302,7 +297,8 @@ function simulateCapture(simBoard, pos, card) {
 
         const other = simBoard[n.pos];
         const isInvincible = other && other.invincible && !other.disabledPower;
-        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible) {
+        const blockedByDomain = isCaptureBlockedForPair(card, other);
+        if (other && !other.isDomain && other.owner !== card.owner && !other.frozen && !isInvincible && !blockedByDomain) {
             if (card[n.side] > other[n.opposite]) {
                 other.owner = card.owner;
                 gained++;
